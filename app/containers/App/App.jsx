@@ -9,6 +9,7 @@ export const App = () => (
   <>
     {/* Here we can put a header or even use react-helmet if needed */}
     <H1>Fawzi Najjar new branch</H1>
+    <H2>new header 2</H2>
     <Switch>
       <Route exact path="/" component={CounterContainer} />
       <Route component={NotFound} />
