@@ -1,6 +1,6 @@
 const path = require('path')
 
-module.exports = options => ({
+module.exports = (options) => ({
   mode: options.mode,
 
   entry: options.entry,
@@ -24,6 +24,22 @@ module.exports = options => ({
           loader: 'babel-loader',
           options: options.babelQuery
         }
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        use: [
+          {
+            loader: 'file-loader'
+          }
+        ]
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.svg$/,
+        loader: 'svg-inline-loader'
       }
     ]
   },
