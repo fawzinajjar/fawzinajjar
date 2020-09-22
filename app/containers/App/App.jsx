@@ -1,19 +1,10 @@
 import React from "react";
-import { H1 } from "components/H1";
-import { CounterContainer } from "containers/Counter";
-import { NotFound } from "containers/NotFound";
-
+import Header from "../Header/Header";
 import { Switch, Route } from "react-router-dom";
 
 export const App = () => (
   <>
-    {/* Here we can put a header or even use react-helmet if needed */}
-    <H1>Fawzi Najjar new branch</H1>
-    <H2>new header 2</H2>
-    <Switch>
-      <Route exact path="/" component={CounterContainer} />
-      <Route component={NotFound} />
-    </Switch>
-    {/* Here is a good place for a footer */}
+    <Header />
+    <Switch></Switch>
   </>
 );
