@@ -13,7 +13,6 @@ export default function SocialMedia() {
       <style jsx="true">
         {`
           .container {
-            display: flex;
             flex: 1;
             order: 2;
           }
