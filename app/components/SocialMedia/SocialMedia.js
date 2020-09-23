@@ -3,23 +3,13 @@ import React from "react";
 export default function SocialMedia() {
   return (
     <>
-      <div className="container">
-        <span className="spans">facebook</span>
-        <span className="spans">
-          <i class="fab fa-github"></i>
-        </span>
-        <span className="spans">LinkedIn</span>
+      <div className="">
+        <button className="">facebook</button>
+        <button className="">InstaGram</button>
+        <button className="">GitHub</button>
+        <button className="">LinkedIn</button>
       </div>
-      <style jsx="true">
-        {`
-          .container {
-            flex: 1;
-            order: 2;
-          }
-          .spans {
-          }
-        `}
-      </style>
+      <style jsx="true">{``}</style>
     </>
   );
 }

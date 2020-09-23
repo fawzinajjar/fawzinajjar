@@ -4,7 +4,14 @@ import { Switch, Route } from "react-router-dom";
 
 export const App = () => (
   <>
-    <Header />
+    <div>
+      <Header />
+    </div>
+
     <Switch></Switch>
+    <style jsx="true">{`
+      div {
+      }
+    `}</style>
   </>
 );

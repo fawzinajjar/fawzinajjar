@@ -5,30 +5,38 @@ import ImageSlide from "components/ImageSlideShow/ImageSlide";
 
 export default function Header() {
   return (
-    <div className="container">
-      <div className="Name">
-        <Name />
-      </div>
-      <div className="ImageSlide">
+    <div className="main_container">
+      <div className="sub_containers image_slide">
         <ImageSlide />
       </div>
-      <div className="SocialMedia">
+      <div className="sub_containers name">
+        <Name />
+      </div>
+      <div className="sub_containers social_media">
         <SocialMedia />
       </div>
 
-      <style jsx>
-        {`
-          .container {
-            display: flex;
-            background-color: black;
-            padding: 20px;
-          }
-          .ImageSlide {
-            width: 300px;
-            height: 150px;
-          }
-        `}
-      </style>
+      <style jsx>{`
+        .main_container {
+          display: flex;
+
+          flex-wrap: wrap;
+        }
+        .sub_containers {
+          object-fit: contain;
+          border: 1px solid blue;
+          min-width: 100px;
+        }
+        .image_slide {
+          flex: 1 1 250px;
+        }
+        .name {
+          flex: 15 1 250px;
+        }
+        .social_media {
+          flex: 1 1 250px;
+        }
+      `}</style>
     </div>
   );
 }
