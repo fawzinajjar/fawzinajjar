@@ -2,6 +2,7 @@ import React from "react";
 import Name from "components/Name/Name";
 import SocialMedia from "components/SocialMedia/SocialMedia";
 import ImageSlide from "components/ImageSlideShow/ImageSlide";
+import VisitorsSignature from "components/VisitorsSignature/VisitorsSignature";
 
 export default function Header() {
   return (
@@ -12,9 +13,12 @@ export default function Header() {
       <div className="sub_containers name">
         <Name />
       </div>
-      <div className="sub_containers social_media">
-        <SocialMedia />
+      <div className="sub_containers visitors_signature">
+        <VisitorsSignature />
       </div>
+      {/* <div className="sub_containers social_media">
+        <SocialMedia />
+      </div> */}
 
       <style jsx>{`
         .main_container {
@@ -32,6 +36,9 @@ export default function Header() {
         .name {
           flex: 1 1 250px;
           border-bottom: 1px solid rgb(75, 75, 75, 1);
+        }
+        .visitors_signature {
+          flex: 1 1 250px;
         }
         .social_media {
           flex: 1 1 250px;

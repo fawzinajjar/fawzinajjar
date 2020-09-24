@@ -4,11 +4,11 @@ import { Fade, Zoom } from "react-slideshow-image";
 
 export default function Name() {
   const words = ["Hello, there!", "Привет!", "Ciao!", "Selam!", "こんにちは！"];
-  const names = ["Фаузи Нажжап", "فوزي نجار", "Full Stack Developer"];
+  const names = ["Фаузи Нажжап", "فوزي نجار"];
   const zoomInProperties = {
     duration: 4000,
     transitionDuration: 1000,
-    pauseOnHover: true,
+    pauseOnHover: false,
     arrows: false,
     autoplay: true,
     scale: 1,
@@ -31,7 +31,7 @@ export default function Name() {
           </div>
         ))}
       </Zoom>
-      <style jsx="true">{`
+      <style jsx>{`
         .word {
           font-size: 1.9vw;
           padding-left: 3.6vw;
