@@ -33,6 +33,7 @@ const ImageSlide = () => {
           max-width: 100%;
           max-height: 100%;
           border-radius: 50%;
+          border: 3px solid rgb(0, 0, 0, 0.2);
         }
       `}</style>
     </>
