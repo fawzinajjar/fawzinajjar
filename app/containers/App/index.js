@@ -1,3 +1,3 @@
-import { App } from './App'
+import { App } from "./App";
 
-export const AppContainer = App
+export const AppContainer = App;

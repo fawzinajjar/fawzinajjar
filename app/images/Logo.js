@@ -14,7 +14,7 @@ const Logo = () => {
       </metadata>
       <g
         transform="translate(0.000000,616.000000) scale(0.100000,-0.100000)"
-        fill="yellow"
+        fill="cyan"
         stroke="none"
       >
         <path

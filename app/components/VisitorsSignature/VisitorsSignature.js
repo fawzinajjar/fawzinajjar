@@ -30,7 +30,7 @@ export default function VisitorsSignature() {
           <i className="fas fa-plus-circle"></i>
         </span>
         <OverlayPageModal open={isOpen} close={() => setIsOpen(false)}>
-          <p>fawzi najjsdadadadadasdadadadadadadar</p>
+          <p>fawzi najjar</p>
           <input></input>
         </OverlayPageModal>
       </span>
@@ -48,9 +48,8 @@ export default function VisitorsSignature() {
             margin-left: 10px;
             padding-left: 10px;
             font-family: "Sacramento", cursive;
-            border-left: 1px solid #ffff00;
+
             font-size: 100px;
-            border-radius: 15px;
           }
           .signature {
             font-size: 1.9vw;
