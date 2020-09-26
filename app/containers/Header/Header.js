@@ -1,18 +1,25 @@
-import React from "react";
-import Name from "../../components/Name/Name";
+import React from 'react'
+import Logo from 'components/Logo'
+import Navbar from 'components/Navbar'
 
 const Header = () => {
   return (
     <>
-      <Name
-        fontsize="300px"
-        fontcolor="white"
-        fontFamily="Averia Serif Libre"
-      />
-
-      <style jsx>{``}</style>
+      <header className='main-header'>
+        <Logo />
+        <Navbar />
+      </header>
+      <style jsx>
+        {`
+          .main-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 74px;
+          }
+        `}
+      </style>
     </>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header
