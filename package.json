@@ -21,7 +21,6 @@
   "homepage": "https://github.com/promindset/najjar-shop-frontend#readme",
   "dependencies": {
     "connected-react-router": "^6.8.0",
-    "fullscreen-react": "^1.0.4",
     "history": "^5.0.0",
     "immer": "^7.0.9",
     "invariant": "^2.2.4",
@@ -31,7 +30,6 @@
     "react-redux": "^7.2.1",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-slideshow-image": "^3.3.0",
     "redux": "^4.0.5",
     "styled-jsx": "^3.3.0"
   },

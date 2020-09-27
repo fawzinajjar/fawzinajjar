@@ -1,31 +1,28 @@
 import React from "react";
-import InfoCard from "../../components/InfoCards/Info";
+import Welcome from "../../components/Welcome";
+import Logo from "../../components/Logo";
 
 const Home = () => {
   return (
     <>
-      <div className="container">
-        <div className="sub_container">
-          <InfoCard />
+      <div id="home" className="home">
+        <Welcome greeting="Hey There" text="I'm Fawzi A Full Stack Developer" />
+
+        <div className="illustration">
+          <Logo width="auto-fit" height="auto-fit" />
         </div>
       </div>
-      <style jsx>
-        {`
-          .container {
-            flex-direction: column;
-            flex: 1;
-            order: 2;
-            display: flex;
-            border: 1px solid blue;
-            width: 100%;
-          }
-          .sub_container {
-            display: flex;
-            justify-content: center;
-            flex: 1;
-          }
-        `}
-      </style>
+
+      <style jsx>{`
+        .home {
+          display: flex;
+          justify-content: space-between;
+          border: 1px solid black;
+        }
+        .illustration {
+          border: 1px solid red;
+        }
+      `}</style>
     </>
   );
 };

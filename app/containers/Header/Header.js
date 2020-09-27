@@ -1,11 +1,11 @@
-import React from 'react'
-import Logo from 'components/Logo'
-import Navbar from 'components/Navbar'
+import React from "react";
+import Logo from "components/Logo";
+import Navbar from "components/Navbar";
 
 const Header = () => {
   return (
     <>
-      <header className='main-header'>
+      <header className="main-header">
         <Logo />
         <Navbar />
       </header>
@@ -19,7 +19,7 @@ const Header = () => {
         `}
       </style>
     </>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
