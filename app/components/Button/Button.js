@@ -6,22 +6,23 @@ const Button = ({ text, color }) => {
       <button>{text}</button>
       <style jsx>{`
         .container {
-          margin: 10px;
+          margin: 0.9vw;
         }
         button {
-          width: 150px;
-          padding: 12px;
+          min-width: 10vw;
+          padding: 10px;
           font-size: 14px;
           border: none;
           color: white;
           background-color: ${color};
           font-family: Averia Serif Libre, Cursive;
           outline: none;
-          box-shadow: 5px 5px 5px 5px rgb(0, 0, 0, 0.1);
+          box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.3),
+            0 6px 20px 0 rgba(0, 0, 0, 0.29);
         }
         button:hover {
           border: 1px solid white;
-          padding: 11px;
+          padding: 9px;
         }
       `}</style>
     </div>

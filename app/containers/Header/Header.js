@@ -15,6 +15,7 @@ const Header = () => {
             display: flex;
             justify-content: space-between;
             padding: 8px 74px;
+            height: 8vh;
           }
         `}
       </style>

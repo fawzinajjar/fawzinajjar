@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 
 const Navlink = ({ text }) => {
-  const [hovering, setHovering] = useState(false)
+  const [hovering, setHovering] = useState(false);
 
   return (
-    <div className='button-container'>
+    <div className="button-container">
       <button
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
@@ -43,7 +43,7 @@ const Navlink = ({ text }) => {
         `}
       </style>
     </div>
-  )
-}
+  );
+};
 
-export default Navlink
+export default Navlink;

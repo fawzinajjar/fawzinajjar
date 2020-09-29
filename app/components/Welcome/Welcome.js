@@ -4,34 +4,39 @@ import Button from "../Button";
 const Welcome = ({ greeting, text }) => {
   return (
     <div className="container">
-      <div className="greeting">{greeting}</div>
-      <div className="text">{text}</div>
+      <div className="greeting-container">
+        <h4 className="title">{greeting}</h4>
+        <h1 className="message">{text}</h1>
+      </div>
       <div className="buttons_container">
-        <Button color="red" text="HIRE ME NOW" />
-        <Button color="darkblue" text="DOWNLOAD CV" />
+        <Button text="HIRE ME NOW" color="#F16D3F" />
+        <Button text="DOWNLOAD CV" color="#2E3991" />
       </div>
 
       <style jsx>
         {`
+          .container {
+            font-family: Averia Serif Libre, Cursive;
+            color: white;
+            display: flex;
+            flex-direction: column;
+          }
+          .greeting-container {
+          }
+          .title {
+            font-size: 20px;
+          }
+          .message {
+            font-size: 50px;
+          }
           .buttons_container {
             display: flex;
           }
-          .container {
-            display: flex;
-            margin: auto;
-            flex-direction: column;
-            padding: 5px;
-            border: 1px solid yellow;
-            font-family: Averia Serif Libre, Cursive;
-            justify-content: center;
+          h4 {
+            margin-bottom: 0;
           }
-          .greeting {
-            font-size: 3vw;
-            color: lightgrey;
-          }
-          .text {
-            font-size: 4vw;
-            color: white;
+          h1 {
+            margin-top: 0;
           }
         `}
       </style>

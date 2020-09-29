@@ -3,7 +3,7 @@ import React from "react";
 const Logo = ({ width, height }) => {
   return (
     <svg
-      style={{ minWidth: "1px" }}
+      style={{ minWidth: "324px" }}
       version="1.0"
       xmlns="http://www.w3.org/2000/svg"
       width={width ? width : "50px"}

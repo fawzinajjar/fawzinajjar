@@ -1,10 +1,12 @@
 import React from "react";
 import Header from "../Header";
-import Home from "../Home";
+import Landing from "../Landing";
+import Experience from "../Experience";
 
 export const App = () => (
   <>
     <Header />
-    <Home />
+    <Landing />
+    <Experience />
   </>
 );
