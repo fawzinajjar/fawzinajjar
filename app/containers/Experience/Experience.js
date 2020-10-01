@@ -1,9 +1,13 @@
 import React from "react";
 import ExperienceBox from "components/ExperienceBox";
+import Paragraph from "../../components/Texts/Paragraph";
+
+import Button from "../../components/Button";
+import Icon from "../../components/Icon";
 
 const Experience = () => {
   return (
-    <div className="experience-container">
+    <div className="container">
       <div className="skills-box">
         <ExperienceBox
           title="Branding"
@@ -15,26 +19,53 @@ const Experience = () => {
           text="A brand is name brand designsymbol other features that distinguishes an organization"
           number="02"
         />
+
+        <ExperienceBox
+          title="Cloth"
+          text="A brand is name brand designsymbol other features that distinguishes an organization"
+          number="03"
+        />
+
         <ExperienceBox
           title="Cloth"
           text="A brand is name brand designsymbol other features that distinguishes an organization"
           number="03"
         />
       </div>
-      <div className="skills-info"></div>
+      <div className="skills-info">
+        <Icon className="fas fa-briefcase" fontSize="40px" />
+        <Paragraph font_size="40px" font_weight="900">
+          Experienced
+        </Paragraph>
+        <Paragraph font_weight="600" font_size="14px">
+          Experience is Knowladge and or mystery Experience is Knowladge and or
+          mysteryExperience is Knowladge and or mysteryExperience is Knowladge
+        </Paragraph>
+        <Button text="CONTACT NOW" color="#F16D3F" />
+      </div>
       <style jsx>
         {`
-          .experience-container {
+          .container {
+            font-family: Averia Serif Libre, Cursive;
+            background-color: #2e3991;
             display: flex;
-            padding: 0 48px;
-            border: 1px solid red;
-            background-color: #f9f9f9;
-            max-height: 100vh;
+            flex-wrap: wrap;
           }
           .skills-box {
+            margin: 3vw 3vw 3vw 3vw;
+            align-self: center;
+            flex: 1 1 300px;
             display: inline-flex;
             flex-direction: column;
-            gap: 20px;
+          }
+          .skills-info {
+            flex: 1 1 300px;
+            padding: 3vw 3vw 3vw 3vw;
+            margin: 3vw 3vw 3vw 3vw;
+            align-self: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
           }
         `}
       </style>

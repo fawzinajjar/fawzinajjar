@@ -21,14 +21,13 @@ const ExeperienceBox = ({ title, text, number }) => {
             justify-content: center;
             font-family: Averia Serif Libre, Cursive;
             color: white;
-            margin: auto;
+            padding: 1.5vh 4vh 3vh 0;
           }
           .number {
             background-color: transparent;
             display: flex;
             transform: translate(50%, 0);
             font-size: 40px;
-            padding: 10px;
             border-radius: 50%;
             border: none;
           }
@@ -57,7 +56,8 @@ const ExeperienceBox = ({ title, text, number }) => {
             padding: 10px 30px;
             background-color: #2c378e;
             display: inline-block;
-            box-shadow: 3px 1px rgb(60, 60, 60, 0.2);
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4),
+              0 6px 20px 0 rgba(0, 0, 0, 0.2);
           }
           .title {
             font-size: 16px;

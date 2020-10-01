@@ -1,25 +1,29 @@
 import React from "react";
-import Logo from "components/Logo";
 import Navbar from "components/Navbar";
+import Paragraph from "../../components/Texts/Paragraph";
 
 const Header = () => {
   return (
-    <>
-      <header className="main-header">
-        <Logo />
-        <Navbar />
-      </header>
+    <div className="container">
+      <Paragraph font_weight="900" color="white" font_size="40px">
+        FawziNajjar
+      </Paragraph>
+      <Navbar />
+
       <style jsx>
         {`
-          .main-header {
+          .container {
             display: flex;
-            justify-content: space-between;
-            padding: 8px 74px;
-            height: 8vh;
+            flex-direction: row;
+            justify-content: space-around;
+            background-color: rgb(46, 57, 145, 0.96);
+            position: fixed;
+            height: 10vh;
+            width: 100%;
           }
         `}
       </style>
-    </>
+    </div>
   );
 };
 

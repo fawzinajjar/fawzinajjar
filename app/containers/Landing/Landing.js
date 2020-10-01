@@ -1,45 +1,26 @@
 import React from "react";
 import Welcome from "../../components/Welcome";
-import Logo from "../../components/Logo";
-import ExeperienceBox from "../../components/ExperienceBox";
-import MyImage from "../../components/Logo/1.png";
+import FawziSVG from "../../images/FawziSVG";
 
 const Landing = () => {
   return (
-    <>
-      <div id="home" className="container">
-        <div className="greeting-container">
-          <Welcome
-            greeting="Hey There"
-            text="I'm Fawzi A Full Stack Developer"
-          />
-        </div>
-        <div className="my-image-container">
-          <img width="" src={MyImage} />
-        </div>
-      </div>
-
+    <div className="container">
+      <Welcome greeting="Hey There" text="I'm Fawzi A Full Stack Developer" />
+      <FawziSVG />
       <style jsx>{`
         .container {
           flex-wrap: wrap;
-          padding: 0 3vw;
+          padding: 0 50px 0 50px;
           display: flex;
-          justify-content: space-around;
+          height: 90vh;
         }
-        .greeting-container {
-          padding: 0 3vw;
-          align-self: center;
-          flex: 1 1 350px;
-        }
-        .my-image-container {
-          flex: 1 1 350px;
-          height: 89vh;
-        }
-        img {
-          border: 2px solid red;
+        @media (max-width: 600px) {
+          .container {
+            padding: 0 0 0 15px;
+          }
         }
       `}</style>
-    </>
+    </div>
   );
 };
 

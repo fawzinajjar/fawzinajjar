@@ -1,22 +1,21 @@
-import React, { useState } from 'react'
-import Navlink from 'components/Navlink'
+import React, { useState } from "react";
+import Navlink from "components/Navlink";
 
 const Navbar = () => {
   return (
     <>
-      <div className='navbar'>
-        <Navlink text='Home'></Navlink>
-        <Navlink text='About me'></Navlink>
-        <Navlink text='Services'></Navlink>
-        <Navlink text='Portfolio'></Navlink>
-        <Navlink text='Contact'></Navlink>
+      <div className="navbar">
+        <Navlink text="Home"></Navlink>
+        <Navlink text="About me"></Navlink>
+        <Navlink text="Services"></Navlink>
+        <Navlink text="Portfolio"></Navlink>
+        <Navlink text="Contact"></Navlink>
       </div>
       <style jsx>
         {`
           .navbar {
             display: flex;
           }
-
           @media (max-width: 600px) {
             .navbar {
               display: none;
@@ -25,7 +24,7 @@ const Navbar = () => {
         `}
       </style>
     </>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

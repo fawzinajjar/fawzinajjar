@@ -16,6 +16,8 @@ const Welcome = ({ greeting, text }) => {
       <style jsx>
         {`
           .container {
+            flex: 1 1 300px;
+            align-self: center;
             font-family: Averia Serif Libre, Cursive;
             color: white;
             display: flex;
