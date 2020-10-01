@@ -1,26 +1,26 @@
-const express = require('express')
-const logger = require('./logger')
-const process = require('process')
-const setup = require('./serverMiddleware')
-const devMiddleWare = require('../internals/webpack/webpack.dev.config')
+const express = require("express");
+const logger = require("./logger");
+const process = require("process");
+const setup = require("./serverMiddleware");
+const devMiddleWare = require("../internals/webpack/webpack.dev.config");
 
-const port = parseInt(process.argv[2]) || 3000
+const port = parseInt(process.argv[2]) || 3000;
 
-const app = express()
+const app = express();
 
-setup(app, devMiddleWare)
+setup(app, devMiddleWare);
 
 // use the gzipped bundle
-app.get('*.js', (req, res, next) => {
-  req.url = req.url + '.gz' // eslint-disable-line
-  res.set('Content-Encoding', 'gzip')
-  next()
-})
+app.get("*.js", (req, res, next) => {
+  req.url = req.url + ".gz"; // eslint-disable-line
+  res.set("Content-Encoding", "gzip");
+  next();
+});
 
 // Start your app.
-app.listen(port, '127.0.0.1', async err => {
+app.listen(port, "0.0.0.0", async (err) => {
   if (err) {
-    return logger.error(err.message)
+    return logger.error(err.message);
   }
-  logger.appStarted(port, 'localhost')
-})
+  logger.appStarted(port, "localhost");
+});

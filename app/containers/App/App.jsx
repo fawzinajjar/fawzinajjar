@@ -1,18 +1,19 @@
 import React from "react";
-import { H1 } from "components/H1";
-import { CounterContainer } from "containers/Counter";
-import { NotFound } from "containers/NotFound";
-
-import { Switch, Route } from "react-router-dom";
-
+import Header from "../Header";
+import Landing from "../Landing";
+import Experience from "../Experience";
+import Services from "../Services";
+import Portfolio from "../Portfolio";
+import DoSomething from "../DoSomething/DoSomething";
+import Footer from "../Footer";
 export const App = () => (
   <>
-    {/* Here we can put a header or even use react-helmet if needed */}
-    <H1>Fawzi Najjar</H1>
-    <Switch>
-      <Route exact path="/" component={CounterContainer} />
-      <Route component={NotFound} />
-    </Switch>
-    {/* Here is a good place for a footer */}
+    <Header />
+    <Landing />
+    <Experience />
+    <Services />
+    <Portfolio />
+    <DoSomething />
+    <Footer />
   </>
 );
