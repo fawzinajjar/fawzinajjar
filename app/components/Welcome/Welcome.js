@@ -9,8 +9,15 @@ const Welcome = ({ greeting, text }) => {
         <h1 className="message">{text}</h1>
       </div>
       <div className="buttons_container">
-        <Button text="HIRE ME NOW" color="#F16D3F" />
-        <Button text="DOWNLOAD CV" color="#2E3991" />
+        <Button
+          download="off"
+          action={
+            "https://www.upwork.com/o/profiles/users/~0136a608c21ff338ad/"
+          }
+          text="HIRE ME NOW"
+          color="#F16D3F"
+        />
+        <Button download="on" text="DOWNLOAD CV" color="#2E3991" />
       </div>
 
       <style jsx>

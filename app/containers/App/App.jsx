@@ -4,8 +4,9 @@ import Landing from "../Landing";
 import Experience from "../Experience";
 import Services from "../Services";
 import Portfolio from "../Portfolio";
-import DoSomething from "../DoSomething/DoSomething";
+import Contact from "../Contact";
 import Footer from "../Footer";
+
 export const App = () => (
   <>
     <Header />
@@ -13,7 +14,7 @@ export const App = () => (
     <Experience />
     <Services />
     <Portfolio />
-    <DoSomething />
+    <Contact />
     <Footer />
   </>
 );

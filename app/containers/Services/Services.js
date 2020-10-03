@@ -6,7 +6,7 @@ import Paragraph from "../../components/Texts";
 const Services = () => {
   return (
     <>
-      <div className="container">
+      <div id="services" className="container">
         <Paragraph font_weight="900" font_size="6vh">
           Services I Provide For You
         </Paragraph>

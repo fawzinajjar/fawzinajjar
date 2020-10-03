@@ -4,7 +4,7 @@ import FawziSVG from "../../images/FawziSVG";
 
 const Landing = () => {
   return (
-    <div className="container">
+    <div id="landing" className="container">
       <Welcome greeting="Hey There" text="I'm Fawzi A Full Stack Developer" />
       <FawziSVG />
       <style jsx>{`

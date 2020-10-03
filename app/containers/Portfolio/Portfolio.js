@@ -5,7 +5,7 @@ import Paragraph from "../../components/Texts";
 
 const Portfolio = () => {
   return (
-    <div className="main-container">
+    <div id="portfolio" className="main-container">
       <Paragraph font_weight="900" font_size="6vh">
         Let's See My Portfolio
       </Paragraph>

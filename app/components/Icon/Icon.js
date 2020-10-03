@@ -1,9 +1,10 @@
 import React from "react";
 
-const Icon = ({ className, fontSize, color }) => {
+const Icon = ({ url, className, fontSize, color }) => {
+  console.log(url);
   return (
     <span>
-      <i className={className}></i>
+      <i href={url} className={className}></i>
       <style jsx>
         {`
           span {

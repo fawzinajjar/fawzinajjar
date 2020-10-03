@@ -7,7 +7,7 @@ import Icon from "../../components/Icon";
 
 const Experience = () => {
   return (
-    <div className="container">
+    <div id="experience" className="container ">
       <div className="skills-box">
         <ExperienceBox
           title="Branding"
@@ -38,10 +38,20 @@ const Experience = () => {
           Experienced
         </Paragraph>
         <Paragraph font_weight="600" font_size="14px">
-          Experience is Knowladge and or mystery Experience is Knowladge and or
-          mysteryExperience is Knowladge and or mysteryExperience is Knowladge
+          - JavaScript ES6+ / - ReactJS / React Routing / Hooks / Redux /
+          Redux-Thunk / Redux-Saga / Redux-Form - NodeJS / express / REST APIs -
+          MongoDB / SQL /Mongoose - HTML5 / JSX - CSS3 / SASS / Flexbox / Grid /
+          BootStrap
         </Paragraph>
-        <Button text="CONTACT NOW" color="#F16D3F" />
+        <Paragraph font_size="40px" font_weight="900">
+          Experienced
+        </Paragraph>
+        <Paragraph font_weight="600" font_size="14px">
+          - JavaScript ES6+ / - ReactJS / React Routing / Hooks / Redux /
+          Redux-Thunk / Redux-Saga / Redux-Form - NodeJS / express / REST APIs -
+          MongoDB / SQL /Mongoose - HTML5 / JSX - CSS3 / SASS / Flexbox / Grid /
+          BootStrap
+        </Paragraph>
       </div>
       <style jsx>
         {`

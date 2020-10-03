@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 
-const Navlink = ({ text }) => {
+const Navlink = ({ navigate, text }) => {
   const [hovering, setHovering] = useState(false);
 
   return (
     <div className="button-container">
-      <button
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-      >
-        {text}
-      </button>
+      <form method="get" action={navigate}>
+        <button
+          type="submit"
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+        >
+          {text}
+        </button>
+      </form>
       {hovering ? <span></span> : null}
       <style jsx>
         {`

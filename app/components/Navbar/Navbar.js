@@ -5,11 +5,11 @@ const Navbar = () => {
   return (
     <>
       <div className="navbar">
-        <Navlink text="Home"></Navlink>
-        <Navlink text="About me"></Navlink>
-        <Navlink text="Services"></Navlink>
-        <Navlink text="Portfolio"></Navlink>
-        <Navlink text="Contact"></Navlink>
+        <Navlink navigate={"#landing"} text="Home"></Navlink>
+        <Navlink navigate={"#experience"} text="About me"></Navlink>
+        <Navlink navigate={"#services"} text="Services"></Navlink>
+        <Navlink navigate={"#portfolio"} text="Portfolio"></Navlink>
+        <Navlink navigate={"#contact"} text="Contact"></Navlink>
       </div>
       <style jsx>
         {`
