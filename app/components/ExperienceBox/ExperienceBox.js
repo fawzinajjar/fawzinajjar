@@ -63,7 +63,6 @@ const ExeperienceBox = ({ title, text, number }) => {
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4),
               0 6px 20px 0 rgba(0, 0, 0, 0.2);
           }
-
           .title {
             font-size: 16px;
           }
