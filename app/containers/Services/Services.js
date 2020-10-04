@@ -8,37 +8,24 @@ const Services = () => {
     <>
       <div id="services" className="container">
         <Paragraph font_weight="900" font_size="6vh">
-          Services I Provide For You
+          Projects I Worked On
         </Paragraph>
         <div className="services">
           <ServicesBox
             fontAwsome="fas fa-briefcase"
-            title="title"
-            paragraph="the paragraph of web
-          the paragraph of web
-          the paragraph of web"
+            title="SkillConnect"
+            paragraph="Mini Social Media Web Where i made Registeration System, User Profile and Dashboard. BackEnd : I Used nodeJs Express MongoDB  - FrontEnd : I used React Redux and Bootstrap  "
           />
 
           <ServicesBox
             fontAwsome="fas fa-briefcase"
-            title="title"
-            paragraph="the paragraph of web
-          the paragraph of web
-          the paragraph of web"
+            title="Tasker"
+            paragraph="Small project made to allow User Register and add tasks.BackEnd : I Used nodeJs Express MongoDB  - FrontEnd : I used React Redux and Css and Jsx Styling"
           />
           <ServicesBox
             fontAwsome="fas fa-briefcase"
-            title="title"
-            paragraph="the paragraph of web
-          the paragraph of web
-          the paragraph of web"
-          />
-          <ServicesBox
-            fontAwsome="fas fa-briefcase"
-            title="title title"
-            paragraph="the paragraph of web
-          the paragraph of web
-          the paragraph of web"
+            title="Personal Web"
+            paragraph="Personal website for my self More updates to come. Mainly developed by reactjs and css/JSX in component Styling and deployed at aws servers  "
           />
         </div>
 

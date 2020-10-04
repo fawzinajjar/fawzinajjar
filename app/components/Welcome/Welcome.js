@@ -1,6 +1,5 @@
 import React from "react";
 import Button from "../Button";
-import CV from "../../files/cv-FawziNajjar.pdf";
 
 const Welcome = ({ greeting, text }) => {
   return (
@@ -18,7 +17,7 @@ const Welcome = ({ greeting, text }) => {
           text="HIRE ME NOW"
           color="#F16D3F"
         />
-        <Button action={CV} download="on" text="DOWNLOAD CV" color="#2E3991" />
+        {/* <Button action={CV} download="on" text="DOWNLOAD CV" color="#2E3991" /> */}
       </div>
 
       <style jsx>
