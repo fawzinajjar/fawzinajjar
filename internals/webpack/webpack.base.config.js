@@ -1,4 +1,4 @@
-const path = require('path')
+const path = require("path");
 
 module.exports = (options) => ({
   mode: options.mode,
@@ -7,8 +7,8 @@ module.exports = (options) => ({
 
   output: Object.assign(
     {
-      path: path.resolve(process.cwd(), 'build'),
-      publicPath: ''
+      path: path.resolve(process.cwd(), "build"),
+      publicPath: "",
     },
     options.output
   ),
@@ -21,39 +21,39 @@ module.exports = (options) => ({
         test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
-          options: options.babelQuery
-        }
+          loader: "babel-loader",
+          options: options.babelQuery,
+        },
       },
       {
-        test: /\.(png|jpe?g|gif)$/i,
+        test: /\.(png|jpe?g|gif|pdf)$/i,
         use: [
           {
-            loader: 'file-loader'
-          }
-        ]
+            loader: "file-loader",
+          },
+        ],
       },
       {
         test: /\.css$/i,
-        use: ['style-loader', 'css-loader']
+        use: ["style-loader", "css-loader"],
       },
       {
         test: /\.svg$/,
-        loader: 'svg-inline-loader'
-      }
-    ]
+        loader: "svg-inline-loader",
+      },
+    ],
   },
   plugins: options.plugins,
 
   resolve: {
-    modules: ['node_modules', 'app'],
-    extensions: ['.js', '.jsx', '.json'],
-    mainFields: ['browser', 'jsnext:main', 'main']
+    modules: ["node_modules", "app"],
+    extensions: [".js", ".jsx", ".json"],
+    mainFields: ["browser", "jsnext:main", "main"],
   },
 
   devtool: options.devtool,
 
-  target: 'web',
+  target: "web",
 
-  performance: options.performance || {}
-})
+  performance: options.performance || {},
+});

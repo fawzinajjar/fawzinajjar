@@ -2,46 +2,72 @@ import React from "react";
 import ExperienceBox from "components/ExperienceBox";
 import Paragraph from "../../components/Texts/Paragraph";
 
-import Button from "../../components/Button";
 import Icon from "../../components/Icon";
 
 const Experience = () => {
   return (
-    <div className="container">
+    <div id="experience" className="container ">
       <div className="skills-box">
-        <ExperienceBox
-          title="Branding"
-          text="A brand is name brand designsymbol other features that distinguishes an organization"
-          number="01"
-        />
-        <ExperienceBox
-          title="Phone"
-          text="A brand is name brand designsymbol other features that distinguishes an organization"
-          number="02"
-        />
+        <div className="about">
+          <Paragraph color="White" font_weight="900" font_size="40px">
+            About Me
+          </Paragraph>
+        </div>
 
         <ExperienceBox
-          title="Cloth"
-          text="A brand is name brand designsymbol other features that distinguishes an organization"
-          number="03"
+          title="Languages"
+          text="English  /  Arabic  / Russian"
+          number="fas fa-language"
         />
-
         <ExperienceBox
-          title="Cloth"
-          text="A brand is name brand designsymbol other features that distinguishes an organization"
-          number="03"
+          title="Address"
+          text="Ukraine, Kahrkiv / Lebanon, Beqaa"
+          number="fas fa-map-marker-alt"
+        />
+        <ExperienceBox
+          title="Email Address"
+          text="Fawzinajjar@hotmail.com"
+          number="fas fa-at"
         />
       </div>
       <div className="skills-info">
-        <Icon className="fas fa-briefcase" fontSize="40px" />
-        <Paragraph font_size="40px" font_weight="900">
-          Experienced
+        <Icon className="fas fa-briefcase" fontSize="70px" />
+        <Paragraph font_size="30px" font_weight="900">
+          Languages & Skills
         </Paragraph>
-        <Paragraph font_weight="600" font_size="14px">
-          Experience is Knowladge and or mystery Experience is Knowladge and or
-          mysteryExperience is Knowladge and or mysteryExperience is Knowladge
+        <Paragraph color="#A0A0A0" font_size="15px" font_weight="600">
+          Javascript ES6+
         </Paragraph>
-        <Button text="CONTACT NOW" color="#F16D3F" />
+        <Paragraph font_weight="600" font_size="25px">
+          Front End
+        </Paragraph>
+        <Paragraph color="#A0A0A0" font_weight="600" font_size="15px">
+          Html / CSS
+        </Paragraph>
+        <Paragraph color="#A0A0A0" font_weight="600" font_size="15px">
+          ReactJs / Hooks / Redux / Redux-Thunk / Redux-Form
+        </Paragraph>
+        <Paragraph color="#A0A0A0" font_weight="600" font_size="15px">
+          Bootstrap / SASS / React-Bootstrap / JSX
+        </Paragraph>
+        <Paragraph font_size="25px" font_weight="900">
+          Back End
+        </Paragraph>
+        <Paragraph color="#A0A0A0" font_weight="600" font_size="15px">
+          NodeJs / Express / REST APIs
+        </Paragraph>
+        <Paragraph color="#A0A0A0" font_weight="600" font_size="15px">
+          MongoDB / NOSQL / Mongoose
+        </Paragraph>
+        <Paragraph font_size="25px" font_weight="900">
+          Other Skills
+        </Paragraph>
+        <Paragraph color="#A0A0A0" font_weight="600" font_size="15px">
+          Linux / Bash / zch
+        </Paragraph>
+        <Paragraph color="#A0A0A0" font_weight="600" font_size="15px">
+          Git / Github
+        </Paragraph>
       </div>
       <style jsx>
         {`
@@ -66,6 +92,9 @@ const Experience = () => {
             color: white;
             display: flex;
             flex-direction: column;
+          }
+          .about {
+            align-self: center;
           }
         `}
       </style>

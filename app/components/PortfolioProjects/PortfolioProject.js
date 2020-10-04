@@ -1,9 +1,9 @@
 import React from "react";
-import f1 from "./11.png";
-const PortfolioProject = () => {
+
+const PortfolioProject = ({ url }) => {
   return (
     <div className="container">
-      <img src={f1} />
+      <img src={url} />
       <style jsx>{`
         .container {
           margin: 5vh 5vh 5vh 5vh;

@@ -1,15 +1,18 @@
 import React from "react";
 
-const Button = ({ text, color }) => {
+const Button = ({ download, text, color, action }) => {
   return (
     <div className="container">
-      <button>{text}</button>
+      <form download={download} method="get" action={action}>
+        <button type="submit">{text}</button>
+      </form>
       <style jsx>{`
         .container {
           margin: 0.9vw;
         }
         button {
           min-width: 10vw;
+          border-radius: 12px;
           padding: 10px;
           font-size: 14px;
           border: none;

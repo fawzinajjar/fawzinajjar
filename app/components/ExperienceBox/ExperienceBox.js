@@ -1,11 +1,13 @@
 import React from "react";
-
+import Icon from "../Icon";
 const ExeperienceBox = ({ title, text, number }) => {
   return (
     <div className="main_container">
       <div className="number">
         <div className="number-inner">
-          <span>{number}</span>
+          <span>
+            <Icon className={number} />
+          </span>
         </div>
       </div>
       <div className="text_container">
@@ -52,8 +54,10 @@ const ExeperienceBox = ({ title, text, number }) => {
           }
 
           .text_container {
+            min-width: 70%;
+
             border-radius: 5px;
-            padding: 10px 30px;
+            padding: 15px 40px;
             background-color: #2c378e;
             display: inline-block;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4),

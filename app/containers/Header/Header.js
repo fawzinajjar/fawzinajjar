@@ -5,9 +5,14 @@ import Paragraph from "../../components/Texts/Paragraph";
 const Header = () => {
   return (
     <div className="container">
-      <Paragraph font_weight="900" color="white" font_size="40px">
-        FawziNajjar
-      </Paragraph>
+      <form method="get" action="#landing">
+        <button type="submit">
+          <Paragraph font_weight="900" color="white" font_size="40px">
+            FAWZI NAJJAR
+          </Paragraph>
+        </button>
+      </form>
+
       <Navbar />
 
       <style jsx>
@@ -20,6 +25,13 @@ const Header = () => {
             position: fixed;
             height: 10vh;
             width: 100%;
+          }
+          button {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            margin: 0;
+            padding: 0;
           }
         `}
       </style>
