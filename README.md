@@ -1,1 +1,1 @@
-<h1>Hey there, I'm <strong>Fawzi Najjar</strong></h1>
+<h1>Hey there, I'm <b>Fawzi Najjar</b></h1>
