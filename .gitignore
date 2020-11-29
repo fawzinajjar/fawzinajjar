@@ -2,3 +2,5 @@ node_modules/**
 coverage/**
 build/**
 dist/**
+app/.DS_Store
+.DS_Store
