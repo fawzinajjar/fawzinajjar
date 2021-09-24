@@ -4,6 +4,7 @@ import Icon from "../../components/Icon";
 import Paragraph from "../../components/Texts/Paragraph";
 import ContactButton from "../../components/ContactButton";
 
+const time = new Date().getFullYear()
 const Footer = () => {
   return (
     <div className="container">
@@ -36,7 +37,7 @@ const Footer = () => {
         ></ContactButton>
       </div>
       <div className="end">
-        CopyRight © 2020 fawzinajjar.com™ All RightsReserved®
+        CopyRight © {time} fawzinajjar.com™ All RightsReserved®
       </div>
       <style jsx>
         {`
