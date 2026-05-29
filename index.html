@@ -3,26 +3,350 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>fawzinajjar.com — Coming Soon</title>
+  <title>Fawzi Najjar</title>
   <style>
+    /* ============================================================
+       Brand tokens
+       ============================================================ */
+    :root {
+      --brand:          rgb(42, 83, 47);        /* #2A532F deep forest green — name & key accents */
+      --brand-deep:     rgb(32, 63, 36);        /* hover/active states */
+      --brand-tint:     rgba(42, 83, 47, 0.08); /* glass background fill */
+      --brand-hairline: rgba(42, 83, 47, 0.15); /* bottom border */
+
+      --header-pad: clamp(16px, 4vw, 48px);     /* comfortable horizontal padding */
+      --display-font: "Tw Cen MT", "Century Gothic", "Futura", "Avenir Next", "Avenir", sans-serif; /* brand display font */
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: -apple-system, system-ui, sans-serif;
-      background: #0f172a;
-      color: #f1f5f9;
-      text-align: center;
+      min-height: 100vh;
+      font-family: -apple-system, system-ui, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
     }
-    h1 { font-size: 2.5rem; margin: 0 0 0.5rem; }
-    p  { font-size: 1.1rem; color: #94a3b8; }
+
+    /* ============================================================
+       Sticky frosted-glass header
+       ============================================================ */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      height: 25vh;
+
+      display: flex;
+      align-items: center;          /* vertically center the zones */
+      justify-content: space-between;
+      padding-inline: var(--header-pad);
+
+      /* Apple-style frosted glass: near-white base with subtle green tint */
+      background:
+        linear-gradient(var(--brand-tint), var(--brand-tint)),
+        rgba(255, 255, 255, 0.72);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+
+      /* 1px hairline for definition */
+      border-bottom: 1px solid var(--brand-hairline);
+
+      /* Soft fade: lower ~20% melts into the page */
+      -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+              mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    }
+
+    /* Three horizontal zones */
+    .zone { display: flex; align-items: center; }
+    .zone--left   { justify-content: flex-start; }
+    .zone--center { flex: 1; justify-content: center; }   /* reserved, empty for now */
+    .zone--right  { justify-content: flex-end; }
+
+    /* ============================================================
+       Live name component (swappable slot)
+       --------------------------------------------------------
+       The .name-slot holds one active "state" at a time. Each
+       state is a positioned layer; swapping = fade the old layer
+       out while fading the new one in. To extend later:
+         1. Build a new element with class "name-state".
+         2. Append it to .name-slot, then toggle the "is-active"
+            class off the current state and on the new one.
+         3. The CSS transition handles the crossfade.
+       ============================================================ */
+    .name-slot {
+      position: relative;
+      display: inline-grid;          /* layers stack in one grid cell */
+      font-family: var(--display-font);
+      font-weight: 700;              /* bold */
+      font-size: clamp(2.4rem, 6.5vw, 4.8rem);
+      letter-spacing: 0.005em;
+      line-height: 1.1;
+      color: var(--brand);
+      white-space: nowrap;
+    }
+    .name-state {
+      grid-area: 1 / 1;              /* every state occupies the same cell */
+      opacity: 0;
+      transition: opacity 0.45s ease;
+      pointer-events: none;
+    }
+    .name-state.is-active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Entry effect: typewriter caret.
+       JS types the name char-by-char into .name-text; the caret
+       blinks alongside, then fades out shortly after typing ends. */
+    .name-caret {
+      display: inline-block;
+      width: 0.06em;
+      margin-left: 0.04em;
+      align-self: stretch;
+      background: var(--brand);
+      transform: translateY(0.08em);
+      animation: caretBlink 0.7s step-end infinite;
+    }
+    .name-caret.is-done {
+      animation: caretBlink 0.7s step-end 3, caretFade 0.4s ease 2.1s forwards;
+    }
+    @keyframes caretBlink {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0; }
+    }
+    @keyframes caretFade {
+      to { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .name-caret { animation: none; opacity: 0; }
+    }
+
+    /* ============================================================
+       Contact button
+       ============================================================ */
+    .contact-btn {
+      font: inherit;
+      font-weight: 600;
+      color: #ffffff;
+      background: var(--brand);
+      border: 1px solid var(--brand);
+      border-radius: 999px;
+      padding: clamp(8px, 1.2vw, 12px) clamp(16px, 2.2vw, 28px);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+    }
+    .contact-btn:hover,
+    .contact-btn:focus-visible {
+      background: var(--brand-deep);
+      border-color: var(--brand-deep);
+    }
+    .contact-btn:active { transform: translateY(1px); }
+    .contact-btn:focus-visible {
+      outline: 2px solid var(--brand-deep);
+      outline-offset: 2px;
+    }
+
+    /* ============================================================
+       Contact overlay / modal
+       --------------------------------------------------------
+       Uses the native <dialog> element: showModal() gives us
+       focus trapping, Esc-to-close, aria-modal semantics, and
+       focus return to the invoker for free. We add backdrop-click
+       close and styling on top. To extend: drop content into
+       .dialog-body.
+       ============================================================ */
+    .contact-dialog {
+      border: none;
+      border-radius: 16px;
+      padding: 0;
+      width: min(480px, calc(100vw - 32px));   /* near-full-width on mobile */
+      background: #ffffff;
+      color: #1a1a1a;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    }
+    .contact-dialog::backdrop {
+      background: rgba(15, 23, 42, 0.45);       /* dim the page behind */
+      -webkit-backdrop-filter: blur(2px);
+              backdrop-filter: blur(2px);
+    }
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--brand-hairline);
+    }
+    .dialog-title {
+      margin: 0;
+      font-family: var(--display-font);
+      font-size: 1.25rem;
+      color: var(--brand);
+    }
+    .dialog-close {
+      font: inherit;
+      font-size: 1.4rem;
+      line-height: 1;
+      color: var(--brand);
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .dialog-close:hover,
+    .dialog-close:focus-visible { background: var(--brand-tint); }
+    .dialog-close:focus-visible { outline: 2px solid var(--brand-deep); outline-offset: 2px; }
+
+    .dialog-body {
+      padding: 24px;
+      min-height: 80px;     /* placeholder space for contact info — fill later */
+    }
+
+    /* ============================================================
+       Mobile
+       ============================================================ */
+    @media (max-width: 600px) {
+      .site-header { height: clamp(96px, 18vh, 160px); }
+      .zone--center { display: none; }   /* hide center while empty */
+      .contact-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Demo page content so the sticky header + fade are visible */
+    .page-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px var(--header-pad) 120px;
+      line-height: 1.7;
+      color: #475569;
+    }
   </style>
 </head>
 <body>
-  <h1>Coming Soon</h1>
-  <p>fawzinajjar.com is under construction.</p>
+  <header class="site-header">
+    <!-- Top-left: live, swappable name component -->
+    <div class="zone zone--left">
+      <div class="name-slot" aria-live="polite">
+        <!-- Default state. Typed in by JS on load (data-text holds
+             the target string). Add more .name-state layers later
+             and toggle .is-active to crossfade between them. -->
+        <span class="name-state is-active" data-text="Fawzi Najjar"><span class="name-text"></span><span class="name-caret" aria-hidden="true"></span></span>
+      </div>
+    </div>
+
+    <!-- Center: reserved/empty zone (keeps layout stable for future content) -->
+    <div class="zone zone--center"></div>
+
+    <!-- Top-right: Contact button -->
+    <div class="zone zone--right">
+      <button type="button" class="contact-btn" id="contactBtn" aria-haspopup="dialog">
+        Contact
+      </button>
+    </div>
+  </header>
+
+  <!-- Contact overlay (native modal dialog) -->
+  <dialog class="contact-dialog" id="contactDialog" aria-labelledby="contactTitle">
+    <div class="dialog-header">
+      <h2 class="dialog-title" id="contactTitle">Contact</h2>
+      <button type="button" class="dialog-close" id="dialogClose" aria-label="Close contact dialog">&times;</button>
+    </div>
+    <div class="dialog-body">
+      <!-- Contact info placeholder — fill in later -->
+    </div>
+  </dialog>
+
+  <main class="page-content">
+    <p>Page content goes here. Scroll to see the frosted header stay pinned with its soft bottom fade.</p>
+  </main>
+
+  <script>
+    // ============================================================
+    // Contact overlay controller
+    // Native <dialog>.showModal() handles: focus trap, Esc-to-close,
+    // aria-modal, and focus return to the invoker. We layer on
+    // backdrop-click-to-close.
+    // ============================================================
+    (function () {
+      const dialog = document.getElementById("contactDialog");
+      const openBtn = document.getElementById("contactBtn");
+      const closeBtn = document.getElementById("dialogClose");
+
+      openBtn.addEventListener("click", () => dialog.showModal());
+      closeBtn.addEventListener("click", () => dialog.close());
+
+      // Click on the dimmed backdrop (outside the panel) closes it.
+      dialog.addEventListener("click", (e) => {
+        const r = dialog.getBoundingClientRect();
+        const inPanel =
+          e.clientX >= r.left && e.clientX <= r.right &&
+          e.clientY >= r.top  && e.clientY <= r.bottom;
+        if (!inPanel) dialog.close();
+      });
+    })();
+
+    // ============================================================
+    // Typewriter entry — types the default name on first load.
+    // Honors prefers-reduced-motion (shows full text instantly).
+    // ============================================================
+    (function typewriter() {
+      const state = document.querySelector(".name-state.is-active");
+      if (!state) return;
+      const textEl = state.querySelector(".name-text");
+      const caret = state.querySelector(".name-caret");
+      const full = state.getAttribute("data-text") || "";
+
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) {
+        textEl.textContent = full;
+        if (caret) caret.classList.add("is-done");
+        return;
+      }
+
+      let i = 0;
+      const speed = 130;          // ms per character (comfortable pace)
+      (function tick() {
+        if (i <= full.length) {
+          textEl.textContent = full.slice(0, i);
+          i++;
+          setTimeout(tick, speed);
+        } else if (caret) {
+          caret.classList.add("is-done");   // blink a few times, then fade
+        }
+      })();
+    })();
+
+    // ============================================================
+    // Live name component (mechanism only)
+    // ------------------------------------------------------------
+    // swapName(html) crossfades the name slot to a new state.
+    // Cycle logic + message list come later; expose it on window
+    // so it's easy to drive from elsewhere.
+    // ============================================================
+    window.swapName = function swapName(html) {
+      const slot = document.querySelector(".name-slot");
+      if (!slot) return;
+      const current = slot.querySelector(".name-state.is-active");
+      const next = document.createElement("span");
+      next.className = "name-state";
+      next.innerHTML = html;
+      slot.appendChild(next);
+      // Force reflow so the opacity transition runs on the new layer.
+      void next.offsetWidth;
+      next.classList.add("is-active");
+      if (current) {
+        current.classList.remove("is-active");
+        current.addEventListener("transitionend", () => current.remove(), { once: true });
+      }
+    };
+  </script>
 </body>
 </html>
