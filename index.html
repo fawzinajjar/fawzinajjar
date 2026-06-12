@@ -16,6 +16,8 @@
 
       --header-pad: clamp(16px, 4vw, 48px);     /* comfortable horizontal padding */
       --display-font: "Tw Cen MT", "Century Gothic", "Futura", "Avenir Next", "Avenir", sans-serif; /* brand display font */
+
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* premium decelerate */
     }
 
     * { box-sizing: border-box; }
@@ -38,33 +40,33 @@
       top: 0;
       z-index: 1000;
       width: 100%;
-      height: 25vh;
+      min-height: clamp(220px, 40vh, 440px);   /* generous, breathing space */
 
-      display: flex;
-      align-items: center;          /* vertically center the zones */
-      justify-content: space-between;
-      padding-inline: var(--header-pad);
+      display: grid;
+      place-items: center;          /* name sits dead-center, perfectly balanced */
+      padding: clamp(24px, 5vh, 56px) var(--header-pad);
 
-      /* Apple-style frosted glass: near-white base with subtle green tint */
+      /* Apple-style frosted glass: near-white base with a whisper of green */
       background:
         linear-gradient(var(--brand-tint), var(--brand-tint)),
-        rgba(255, 255, 255, 0.72);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      backdrop-filter: blur(20px) saturate(180%);
+        rgba(255, 255, 255, 0.66);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(180%);
 
-      /* 1px hairline for definition */
+      /* Ultra-thin hairline for definition */
       border-bottom: 1px solid var(--brand-hairline);
 
-      /* Soft fade: lower ~20% melts into the page */
-      -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-              mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+      /* Soft fade: lower ~22% melts into the page */
+      -webkit-mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+              mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
     }
 
-    /* Three horizontal zones */
-    .zone { display: flex; align-items: center; }
-    .zone--left   { justify-content: flex-start; }
-    .zone--center { flex: 1; justify-content: center; }   /* reserved, empty for now */
-    .zone--right  { justify-content: flex-end; }
+    /* Minimal Contact affordance, tucked into the top-right corner */
+    .header-corner {
+      position: absolute;
+      top: clamp(16px, 3vh, 28px);
+      right: var(--header-pad);
+    }
 
     /* ============================================================
        Live name component (swappable slot)
@@ -82,16 +84,17 @@
       display: inline-grid;          /* layers stack in one grid cell */
       font-family: var(--display-font);
       font-weight: 700;              /* bold */
-      font-size: clamp(2.4rem, 6.5vw, 4.8rem);
-      letter-spacing: 0.005em;
-      line-height: 1.1;
+      font-size: clamp(2.8rem, 9vw, 6rem);
+      letter-spacing: 0.01em;
+      line-height: 1.05;
       color: var(--brand);
       white-space: nowrap;
+      text-align: center;
     }
     .name-state {
       grid-area: 1 / 1;              /* every state occupies the same cell */
       opacity: 0;
-      transition: opacity 0.45s ease;
+      transition: opacity 0.5s ease;
       pointer-events: none;
     }
     .name-state.is-active {
@@ -99,30 +102,50 @@
       pointer-events: auto;
     }
 
-    /* Entry effect: typewriter caret.
-       JS types the name char-by-char into .name-text; the caret
-       blinks alongside, then fades out shortly after typing ends. */
-    .name-caret {
+    /* Entry effect: per-letter reveal.
+       JS splits .name-line into one .name-letter per character, each
+       carrying a --i index so CSS can stagger the animation. Letters
+       fade up while a blur clears — a clean, premium "settle". */
+    .name-line { display: block; }
+    .name-letter {
       display: inline-block;
-      width: 0.06em;
-      margin-left: 0.04em;
-      align-self: stretch;
-      background: var(--brand);
-      transform: translateY(0.08em);
-      animation: caretBlink 0.7s step-end infinite;
+      opacity: 0;
+      transform: translateY(0.5em);
+      filter: blur(12px);
+      will-change: transform, filter, opacity;
     }
-    .name-caret.is-done {
-      animation: caretBlink 0.7s step-end 3, caretFade 0.4s ease 2.1s forwards;
+    .name-letter.is-space { width: 0.28em; }
+    .name-state.reveal .name-letter {
+      animation: letterIn 0.85s var(--ease-out) both;
+      animation-delay: calc(var(--i) * 55ms);
     }
-    @keyframes caretBlink {
-      0%, 100% { opacity: 1; }
-      50%      { opacity: 0; }
+    @keyframes letterIn {
+      to { opacity: 1; transform: none; filter: blur(0); }
     }
-    @keyframes caretFade {
-      to { opacity: 0; }
+
+    /* Accent line: a hairline that draws in beneath the name once the
+       letters have landed — the finishing flourish. */
+    .name-rule {
+      height: 2px;
+      width: 100%;
+      margin-top: clamp(10px, 1.6vh, 18px);
+      border-radius: 2px;
+      background: linear-gradient(90deg, transparent, var(--brand) 50%, transparent);
+      transform: scaleX(0);
+      opacity: 0;
     }
+    .name-state.reveal .name-rule {
+      animation: ruleIn 0.9s var(--ease-out) both;
+      /* starts after the last letter is on its way in */
+      animation-delay: var(--rule-delay, 0.8s);
+    }
+    @keyframes ruleIn {
+      to { transform: scaleX(1); opacity: 0.45; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .name-caret { animation: none; opacity: 0; }
+      .name-letter { opacity: 1; transform: none; filter: none; animation: none; }
+      .name-rule { transform: scaleX(1); opacity: 0.45; animation: none; }
     }
 
     /* ============================================================
@@ -131,18 +154,21 @@
     .contact-btn {
       font: inherit;
       font-weight: 600;
-      color: #ffffff;
-      background: var(--brand);
-      border: 1px solid var(--brand);
+      font-size: 0.92rem;
+      letter-spacing: 0.01em;
+      color: var(--brand);
+      background: transparent;
+      border: 1px solid var(--brand-hairline);
       border-radius: 999px;
-      padding: clamp(8px, 1.2vw, 12px) clamp(16px, 2.2vw, 28px);
+      padding: 9px 20px;
       cursor: pointer;
-      transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.05s ease;
     }
     .contact-btn:hover,
     .contact-btn:focus-visible {
-      background: var(--brand-deep);
-      border-color: var(--brand-deep);
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #ffffff;
     }
     .contact-btn:active { transform: translateY(1px); }
     .contact-btn:focus-visible {
@@ -212,11 +238,10 @@
        Mobile
        ============================================================ */
     @media (max-width: 600px) {
-      .site-header { height: clamp(96px, 18vh, 160px); }
-      .zone--center { display: none; }   /* hide center while empty */
+      .site-header { min-height: clamp(200px, 44vh, 360px); }
       .contact-btn {
-        padding: 8px 16px;
-        font-size: 0.9rem;
+        padding: 7px 15px;
+        font-size: 0.82rem;
       }
     }
 
@@ -232,21 +257,19 @@
 </head>
 <body>
   <header class="site-header">
-    <!-- Top-left: live, swappable name component -->
-    <div class="zone zone--left">
-      <div class="name-slot" aria-live="polite">
-        <!-- Default state. Typed in by JS on load (data-text holds
-             the target string). Add more .name-state layers later
-             and toggle .is-active to crossfade between them. -->
-        <span class="name-state is-active" data-text="Fawzi Najjar"><span class="name-text"></span><span class="name-caret" aria-hidden="true"></span></span>
-      </div>
+    <!-- Centerpiece: live, swappable name component.
+         JS splits data-text into per-letter spans and triggers the
+         staggered reveal. Add more .name-state layers later and toggle
+         .is-active to crossfade between them. -->
+    <div class="name-slot" aria-label="Fawzi Najjar">
+      <span class="name-state is-active" data-text="Fawzi Najjar" aria-hidden="true">
+        <span class="name-line"></span>
+        <span class="name-rule" aria-hidden="true"></span>
+      </span>
     </div>
 
-    <!-- Center: reserved/empty zone (keeps layout stable for future content) -->
-    <div class="zone zone--center"></div>
-
-    <!-- Top-right: Contact button -->
-    <div class="zone zone--right">
+    <!-- Minimal Contact affordance, top-right corner -->
+    <div class="header-corner">
       <button type="button" class="contact-btn" id="contactBtn" aria-haspopup="dialog">
         Contact
       </button>
@@ -294,34 +317,44 @@
     })();
 
     // ============================================================
-    // Typewriter entry — types the default name on first load.
-    // Honors prefers-reduced-motion (shows full text instantly).
+    // Name reveal — splits the active name into per-letter spans and
+    // triggers the staggered fade/blur-clear, then draws the accent
+    // line. CSS handles the motion; we just build the letters, set the
+    // stagger index (--i), and time the rule (--rule-delay).
+    // Honors prefers-reduced-motion (CSS shows everything instantly).
     // ============================================================
-    (function typewriter() {
+    (function revealName() {
       const state = document.querySelector(".name-state.is-active");
       if (!state) return;
-      const textEl = state.querySelector(".name-text");
-      const caret = state.querySelector(".name-caret");
+      const line = state.querySelector(".name-line");
+      const rule = state.querySelector(".name-rule");
       const full = state.getAttribute("data-text") || "";
+      if (!line) return;
 
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduce) {
-        textEl.textContent = full;
-        if (caret) caret.classList.add("is-done");
-        return;
+      const STEP = 0.055;         // seconds between each letter (matches CSS)
+      const chars = [...full];
+      line.textContent = "";
+
+      chars.forEach((ch, i) => {
+        const span = document.createElement("span");
+        span.className = "name-letter";
+        span.style.setProperty("--i", i);
+        if (ch === " ") {
+          span.classList.add("is-space");
+          span.innerHTML = "&nbsp;";
+        } else {
+          span.textContent = ch;
+        }
+        line.appendChild(span);
+      });
+
+      // Draw the accent line just after the final letter begins settling.
+      if (rule) {
+        rule.style.setProperty("--rule-delay", (chars.length * STEP + 0.15).toFixed(2) + "s");
       }
 
-      let i = 0;
-      const speed = 130;          // ms per character (comfortable pace)
-      (function tick() {
-        if (i <= full.length) {
-          textEl.textContent = full.slice(0, i);
-          i++;
-          setTimeout(tick, speed);
-        } else if (caret) {
-          caret.classList.add("is-done");   // blink a few times, then fade
-        }
-      })();
+      // Kick the animation on the next frame so styles apply cleanly.
+      requestAnimationFrame(() => state.classList.add("reveal"));
     })();
 
     // ============================================================
