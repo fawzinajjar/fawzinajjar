@@ -1,385 +1,1481 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- ============================================================================
+     Fawzi Najjar — personal CV site (single self-contained file)
+     ----------------------------------------------------------------------------
+     STRUCTURE OF THIS FILE
+       <head>   : meta, pre-paint theme script, and ALL styles (commented by block)
+       <body>   : 1) Dynamic Island header   2) the slide "deck"   3) contact modal
+       <script> : Theme · Deck controller · Island · Name reveal · Modal (commented)
+
+     BIG PICTURE
+       The page is a "deck" of full-screen slides. Scrolling is taken over by JS so
+       one gesture = exactly one slide (see the Deck controller). A floating
+       iPhone-style "Dynamic Island" at the top shows where you are (current → next
+       + a progress track) and expands into a clickable jump menu that also holds
+       the theme toggle and Contact button.
+     ============================================================================ -->
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fawzi Najjar</title>
+  <title>Fawzi Najjar — Cross-Functional Professional</title>
+  <meta name="description" content="Fawzi Najjar — Cross-Functional Professional. Expert in Computing & Digital Operations across IT, Hospitality, and Production. Amsterdam, Netherlands.">
+
+  <!-- Pre-paint theme: read the saved/OS theme and set it BEFORE first paint so
+       there is no flash of the wrong colour scheme. -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("theme");
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+      } catch (e) {}
+    })();
+  </script>
+
   <style>
-    /* ============================================================
-       Brand tokens
-       ============================================================ */
+    /* ========================================================================
+       1. DESIGN TOKENS
+          Global sizing/typography variables + per-theme colour palettes.
+          Light = "paper", dark = "night". Brand stays forest-green throughout.
+       ======================================================================== */
     :root {
-      --brand:          rgb(42, 83, 47);        /* #2A532F deep forest green — name & key accents */
-      --brand-deep:     rgb(32, 63, 36);        /* hover/active states */
-      --brand-tint:     rgba(42, 83, 47, 0.08); /* glass background fill */
-      --brand-hairline: rgba(42, 83, 47, 0.15); /* bottom border */
+      --header-pad: clamp(16px, 4vw, 56px);   /* horizontal page padding */
+      --maxw: 1080px;                          /* content max width */
+      --island-top: clamp(12px, 2vh, 22px);    /* gap from top to the island */
+      --exp-pin: clamp(88px, 12vh, 116px);     /* sticky Experience header pin = top-scrim height */
 
-      --header-pad: clamp(16px, 4vw, 48px);     /* comfortable horizontal padding */
-      --display-font: "Tw Cen MT", "Century Gothic", "Futura", "Avenir Next", "Avenir", sans-serif; /* brand display font */
+      --display-font: "Tw Cen MT", "Century Gothic", "Futura", "Avenir Next", "Avenir", sans-serif;
+      --body-font: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
 
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* premium decelerate */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);     /* gentle decelerate */
+      --ease-deck: cubic-bezier(0.22, 1, 0.36, 1);   /* slide glide (no overshoot) */
+      --spring: cubic-bezier(0.34, 1.4, 0.5, 1);     /* island pop (slight overshoot) */
+      --reveal-y: 26px;                               /* travel for fade-up reveals */
     }
 
+    /* Light / paper palette */
+    html[data-theme="light"] {
+      --brand:#2A532F; --brand-deep:#203f24; --brand-soft:#4a7a50;
+      --brand-tint:rgba(42,83,47,0.07); --brand-tint-2:rgba(42,83,47,0.12);
+      --hairline:rgba(42,83,47,0.16);
+      --bg:#ffffff; --bg-soft:#f6f8f6; --surface:rgba(255,255,255,0.82);
+      --ink:#15201a; --ink-soft:#51605a; --ink-faint:#8b978f;
+      --glow:none; --shadow-float:0 24px 60px rgba(20,40,26,0.12);
+      --island-shadow:0 10px 34px rgba(20,40,26,0.16);
+      /* Neumorphic (soft-UI) — light highlight (top-left) + soft shadow (bottom-right) */
+      --nm-bg:#eef1ee;                                   /* surface the soft-UI sits on */
+      --nm-light:rgba(255,255,255,0.95);
+      --nm-dark:rgba(31,58,38,0.18);
+      --nm-raised:-5px -5px 12px var(--nm-light), 6px 6px 16px var(--nm-dark);
+      --nm-raised-sm:-3px -3px 7px var(--nm-light), 3px 3px 8px var(--nm-dark);
+      --nm-inset:inset 2px 2px 6px var(--nm-dark), inset -2px -2px 6px var(--nm-light);
+    }
+    /* Dark / night palette */
+    html[data-theme="dark"] {
+      --brand:#6fcf80; --brand-deep:#5bb96b; --brand-soft:#9adfa6;
+      --brand-tint:rgba(111,207,128,0.08); --brand-tint-2:rgba(111,207,128,0.15);
+      --hairline:rgba(154,223,166,0.16);
+      --bg:#0f120e; --bg-soft:#14180f; --surface:rgba(22,27,18,0.82);
+      --ink:#eaf1ea; --ink-soft:#aab6ad; --ink-faint:#6f7d72;
+      --glow:0 0 24px rgba(111,207,128,0.25); --shadow-float:0 24px 60px rgba(0,0,0,0.55);
+      --island-shadow:0 10px 34px rgba(0,0,0,0.5);
+      /* Neumorphic (soft-UI) — faint top-left highlight, deep bottom-right shadow */
+      --nm-bg:#171c14;
+      --nm-light:rgba(255,255,255,0.05);
+      --nm-dark:rgba(0,0,0,0.55);
+      --nm-raised:-4px -4px 11px var(--nm-light), 6px 6px 16px var(--nm-dark);
+      --nm-raised-sm:-2px -2px 6px var(--nm-light), 3px 3px 9px var(--nm-dark);
+      --nm-inset:inset 2px 2px 6px var(--nm-dark), inset -2px -2px 6px var(--nm-light);
+    }
+
+    /* ========================================================================
+       2. BASE / RESET
+          The <body> itself never scrolls — the .deck owns scrolling so we can
+          drive it from JS. (overflow:hidden here is what kills the browser's
+          interfering native scroll.)
+       ======================================================================== */
     * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
+    html, body { height: 100%; }
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: -apple-system, system-ui, "Segoe UI", sans-serif;
-      background: #ffffff;
-      color: #1a1a1a;
+      font-family: var(--body-font);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      transition: background 0.5s ease, color 0.5s ease;
     }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { color: var(--brand-deep); }
 
-    /* ============================================================
-       Sticky frosted-glass header
-       ============================================================ */
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+    /* Cinematic theme switch: the JS animates a clip-path circle on the NEW
+       snapshot, so we disable the browser's default cross-fade and stack the
+       new theme on top of the old one. (See JS module A.) */
+    ::view-transition-old(root),
+    ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+    ::view-transition-old(root) { z-index: 1; }
+    ::view-transition-new(root) { z-index: 9999; }
+
+    /* ========================================================================
+       3. DECK + SLIDES
+          .deck       = fixed viewport, clips everything (no native scroll).
+          .deck-track = tall column of slides, moved with translateY by JS
+                        (transform: translateY(var(--i) * -100dvh)).
+          .slide      = one full screen; content is vertically centred via
+                        margin:auto but the slide can scroll internally if its
+                        content is taller than the screen (handled in JS too).
+       ======================================================================== */
+    .deck { height: 100dvh; overflow: hidden; position: relative; }
+    .deck-track {
+      will-change: transform;
+      transform: translateY(calc(var(--i, 0) * -100dvh));
+      transition: transform 0.8s var(--ease-deck);
+    }
+    .slide {
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: safe center; /* centre when short; top-align + scroll when tall.
+                                       'safe' avoids the flexbox trap where overflowing
+                                       content gets clipped & unreachable at the top. */
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;       /* hide scrollbar (Firefox) */
+    }
+    .slide::-webkit-scrollbar { display: none; }   /* hide scrollbar (WebKit) */
+    .slide-inner {
       width: 100%;
-      min-height: clamp(220px, 40vh, 440px);   /* generous, breathing space */
-
-      display: grid;
-      place-items: center;          /* name sits dead-center, perfectly balanced */
-      padding: clamp(24px, 5vh, 56px) var(--header-pad);
-
-      /* Apple-style frosted glass: near-white base with a whisper of green */
-      background:
-        linear-gradient(var(--brand-tint), var(--brand-tint)),
-        rgba(255, 255, 255, 0.66);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      backdrop-filter: blur(24px) saturate(180%);
-
-      /* Ultra-thin hairline for definition */
-      border-bottom: 1px solid var(--brand-hairline);
-
-      /* Soft fade: lower ~22% melts into the page */
-      -webkit-mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
-              mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+      max-width: var(--maxw);
+      margin-inline: auto;
+      padding: clamp(96px, 14dvh, 150px) var(--header-pad) clamp(40px, 8dvh, 90px);
     }
 
-    /* Minimal Contact affordance, tucked into the top-right corner */
-    .header-corner {
-      position: absolute;
-      top: clamp(16px, 3vh, 28px);
-      right: var(--header-pad);
+    /* Top scrim: masks any content scrolling up behind the floating island /
+       sticky header, so nothing peeks through near the top. Sits above the deck
+       content but below the island. */
+    .top-scrim {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--exp-pin);
+      background: linear-gradient(var(--bg) 70%, transparent);
+      z-index: 90; pointer-events: none;
+      transition: background 0.5s ease;
     }
 
-    /* ============================================================
-       Live name component (swappable slot)
-       --------------------------------------------------------
-       The .name-slot holds one active "state" at a time. Each
-       state is a positioned layer; swapping = fade the old layer
-       out while fading the new one in. To extend later:
-         1. Build a new element with class "name-state".
-         2. Append it to .name-slot, then toggle the "is-active"
-            class off the current state and on the new one.
-         3. The CSS transition handles the crossfade.
-       ============================================================ */
+    /* ========================================================================
+       INTRO CURTAIN — a one-time "light through opening doors" reveal that plays
+       on load, BEFORE the name. Two dark panels meet at a brilliant light seam;
+       the seam blooms while god-rays fan out and a lens-flare streaks across,
+       then the doors slide apart flooding light to reveal the hero. JS starts
+       the name reveal as the doors open and removes the curtain after.
+       (Skipped under prefers-reduced-motion.)
+       ======================================================================== */
+    #curtain {
+      position: fixed; inset: 0; z-index: 9999; overflow: hidden; background: transparent;
+      pointer-events: none;                 /* decorative — never traps clicks */
+      animation: curtainGone 0.6s ease 2s forwards;
+    }
+    .cur-panel { position: absolute; top: 0; bottom: 0; width: 50.6%; z-index: 2; will-change: transform; }
+    .cur-left  { left: 0;  background: linear-gradient(90deg,  #06120a 78%, #1a4228);
+                 animation: doorLeft  1.2s cubic-bezier(0.76,0,0.24,1) 0.95s forwards; }
+    .cur-right { right: 0; background: linear-gradient(270deg, #06120a 78%, #1a4228);
+                 animation: doorRight 1.2s cubic-bezier(0.76,0,0.24,1) 0.95s forwards; }
+    @keyframes doorLeft  { to { transform: translateX(-101%); } }
+    @keyframes doorRight { to { transform: translateX(101%); } }
+
+    /* god-rays radiating from the seam (screen-blended light beams) */
+    .cur-rays {
+      position: absolute; left: 50%; top: 50%; width: 150vmax; height: 150vmax;
+      transform: translate(-50%,-50%); z-index: 3; mix-blend-mode: screen; opacity: 0;
+      background: conic-gradient(from 0deg,
+        transparent 0 7deg, rgba(176,245,198,0.12) 8deg 9deg,
+        transparent 10deg 19deg, rgba(255,233,168,0.10) 20deg 21deg,
+        transparent 22deg 31deg, rgba(176,245,198,0.10) 32deg 33deg, transparent 34deg);
+      animation: raysIn 0.8s ease 0.3s forwards, raysSpin 7s linear 0.3s, raysOut 1.1s ease 1.05s forwards;
+    }
+    @keyframes raysIn   { to { opacity: 1; } }
+    @keyframes raysOut  { to { opacity: 0; } }
+    @keyframes raysSpin { to { transform: translate(-50%,-50%) rotate(40deg); } }
+
+    /* the bright central light seam */
+    .cur-seam {
+      position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; z-index: 4;
+      transform: translateX(-50%) scaleY(0.12); opacity: 0;
+      background: linear-gradient(180deg, transparent, #bff7cf 18%, #fff0bf 50%, #bff7cf 82%, transparent);
+      box-shadow: 0 0 24px 6px rgba(180,245,200,0.7), 0 0 90px 22px rgba(150,230,175,0.4);
+      animation: seamIn 0.7s var(--ease-out) 0.15s forwards, seamOpen 1.2s cubic-bezier(0.76,0,0.24,1) 0.95s forwards;
+    }
+    @keyframes seamIn { to { opacity: 1; transform: translateX(-50%) scaleY(1); } }
+    @keyframes seamOpen {
+      0%   { width: 3px;  opacity: 1; }
+      55%  { width: 16px; opacity: 1; box-shadow: 0 0 70px 26px rgba(190,247,205,0.85), 0 0 190px 76px rgba(255,233,168,0.5); }
+      100% { width: 72vw; opacity: 0; }
+    }
+
+    /* a horizontal lens-flare streak at the moment the doors open */
+    .cur-flare {
+      position: absolute; top: 50%; left: 0; right: 0; height: 2px; z-index: 4; transform-origin: center;
+      transform: translateY(-50%) scaleX(0.2); opacity: 0;
+      background: linear-gradient(90deg, transparent, #fff7e0 46%, #ffffff 50%, #fff7e0 54%, transparent);
+      box-shadow: 0 0 22px 5px rgba(255,247,224,0.7);
+      animation: curFlare 1s ease 0.95s forwards;
+    }
+    @keyframes curFlare {
+      0%   { opacity: 0; transform: translateY(-50%) scaleX(0.2); }
+      35%  { opacity: 1; transform: translateY(-50%) scaleX(1); }
+      100% { opacity: 0; transform: translateY(-50%) scaleX(1); }
+    }
+    @keyframes curtainGone { to { opacity: 0; visibility: hidden; } }
+
+    /* --- Reduced-motion / fallback: when JS switches the deck to .native, it
+           becomes an ordinary scroll container (no transform hijack). --- */
+    .deck.native { overflow-y: auto; scroll-snap-type: y proximity; scroll-padding-top: 90px; }
+    .deck.native .deck-track { transform: none !important; }
+    .deck.native .slide { height: auto; min-height: 100dvh; overflow: visible; scroll-snap-align: start; }
+
+    /* ========================================================================
+       4. DYNAMIC ISLAND  (the floating header / live position indicator)
+          .island        = fixed wrapper, centred at top.
+          .island-inner  = the rounded "pill" that morphs (pops on move, grows
+                           when opened into a menu).
+          .island-compact= always-visible row: now → next + track + count.
+          .island-menu   = revealed when .is-open: jump links + theme/contact.
+       ======================================================================== */
+    .island {
+      position: fixed;
+      top: var(--island-top);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      max-width: calc(100vw - 24px);
+    }
+    .island-inner {
+      /* Neumorphic soft-raised pill: opaque soft-UI surface + dual shadow.
+         A whisper of blur keeps it glassy where it overlaps content edges. */
+      background: var(--nm-bg);
+      -webkit-backdrop-filter: blur(8px) saturate(150%);
+              backdrop-filter: blur(8px) saturate(150%);
+      border: 1px solid var(--nm-light);
+      border-radius: 30px;                 /* rounded-rect; pill-ish */
+      box-shadow: var(--nm-raised);
+      overflow: hidden;
+      min-width: min(88vw, 360px);         /* a substantial, useful pill */
+      transition: transform 0.5s var(--spring), border-radius 0.45s var(--ease-out), box-shadow 0.4s var(--ease-out);
+    }
+    /* brief "pop" each time you move to a new slide */
+    .island.is-moving .island-inner { transform: scale(1.05); }
+    .island.is-open   .island-inner { border-radius: 22px; }
+
+    /* --- compact row (it's a real button so it's keyboard-focusable) --- */
+    .island-compact {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 22px;
+      font: inherit; color: var(--ink);
+      background: none; border: none; cursor: pointer;
+      width: 100%;
+    }
+    .island-dot {                          /* small "live" pulse */
+      flex: none; width: 9px; height: 9px; border-radius: 50%;
+      background: var(--brand); box-shadow: var(--glow);
+    }
+    .island-labels { display: flex; align-items: baseline; gap: 9px; min-width: 0; white-space: nowrap; margin-right: auto; }
+    .island-now  { font-family: var(--display-font); font-weight: 700; font-size: 1.14rem; color: var(--brand); }
+    .island-next { font-size: 0.9rem; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; }
+    .island-next .ar { color: var(--ink-faint); margin-right: 3px; }
+    .island-count { font-size: 0.8rem; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.02em; }
+    .island-chev {                         /* affordance: this pill opens a menu */
+      flex: none; width: 16px; height: 16px; color: var(--ink-faint);
+      transition: transform 0.4s var(--spring);
+    }
+    .island.is-open .island-chev { transform: rotate(180deg); color: var(--brand); }
+
+    /* --- segmented progress track (one segment per slide) --- */
+    .island-track { display: flex; align-items: center; gap: 4px; }
+    .island-track .seg {
+      width: 9px; height: 5px; border-radius: 999px;
+      background: var(--brand-tint-2);
+      transition: width 0.4s var(--spring), background 0.4s var(--ease-out);
+    }
+    .island-track .seg.done    { background: var(--brand-soft); }
+    .island-track .seg.current { width: 22px; background: var(--brand); box-shadow: var(--glow); }
+
+    /* --- expanded jump menu (collapsed by default via max-height) --- */
+    .island-menu {
+      max-height: 0; opacity: 0;
+      padding: 0 10px;
+      transition: max-height 0.45s var(--ease-out), opacity 0.3s ease, padding 0.45s var(--ease-out);
+    }
+    .island.is-open .island-menu { max-height: 70vh; opacity: 1; padding: 6px 12px 12px; }
+    .island-menu-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); padding: 8px 10px 6px; border-top: 1px solid var(--hairline); }
+    .island-nav { display: flex; flex-direction: column; gap: 3px; }
+    .island-nav button {
+      display: flex; justify-content: space-between; align-items: center; gap: 18px;
+      font: inherit; font-weight: 600; font-size: 0.98rem; text-align: left;
+      color: var(--ink-soft); background: none; border: none; border-radius: 12px;
+      padding: 11px 14px; cursor: pointer;
+      transition: background 0.18s ease, color 0.18s ease, padding-left 0.2s ease;
+    }
+    .island-nav button:hover { padding-left: 18px; }
+    .island-nav button .idx { font-size: 0.74rem; color: var(--ink-faint); font-weight: 700; }
+    .island-nav button:hover { background: var(--brand-tint); color: var(--brand); }
+    .island-nav button.current { color: var(--brand); background: var(--brand-tint); }
+    .island-nav button.current .idx { color: var(--brand-soft); }
+
+    .island-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .island-actions .contact-btn { flex: 1; justify-content: center; }
+
+    /* ========================================================================
+       5. SHARED CONTROLS (theme toggle + contact button) — live in the island
+       ======================================================================== */
+    .theme-toggle {
+      width: 42px; height: 42px; flex: none;
+      display: grid; place-items: center;
+      border-radius: 999px; border: 1px solid var(--nm-light);
+      background: var(--nm-bg); color: var(--brand); cursor: pointer;
+      box-shadow: var(--nm-raised-sm);     /* soft-raised */
+      transition: box-shadow 0.2s ease, color 0.2s ease, transform 0.1s ease;
+    }
+    .theme-toggle:hover { color: var(--brand-deep); }
+    .theme-toggle:active { box-shadow: var(--nm-inset); transform: scale(0.96); }  /* press → sinks */
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .theme-toggle .icon-moon { display: none; }
+    html[data-theme="dark"] .theme-toggle .icon-sun  { display: none; }
+    html[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+    .contact-btn {
+      font: inherit; font-weight: 600; font-size: 0.9rem;
+      color: var(--brand); background: var(--nm-bg);
+      border: 1px solid var(--nm-light); border-radius: 999px;
+      padding: 10px 22px; cursor: pointer; white-space: nowrap;
+      display: inline-flex; align-items: center;
+      box-shadow: var(--nm-raised-sm);     /* soft-raised */
+      transition: box-shadow 0.2s ease, color 0.2s ease, transform 0.08s ease;
+    }
+    .contact-btn:hover, .contact-btn:focus-visible { color: var(--brand-deep); box-shadow: var(--nm-raised); }
+    .contact-btn:active { box-shadow: var(--nm-inset); transform: translateY(1px); }  /* press → sinks */
+    .contact-btn:focus-visible, .theme-toggle:focus-visible,
+    .island-compact:focus-visible, .island-nav button:focus-visible {
+      outline: 2px solid var(--brand); outline-offset: 2px;
+    }
+
+    /* ========================================================================
+       6. HERO SLIDE (slide 0)
+       ======================================================================== */
+    /* Cinematic first-screen sequence: the NAME shows first; ~2s later the rest
+       cascades in. JS adds .hero-in to the hero's .slide-inner to trigger it;
+       each element's stagger is its own --d (transition-delay). */
+    .hero-reveal {
+      opacity: 0; transform: translateY(18px); filter: blur(5px);
+      transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out), filter 0.9s var(--ease-out);
+      transition-delay: var(--d, 0s);
+    }
+    .hero-in .hero-reveal { opacity: 1; transform: none; filter: none; }
+
+    .hero-eyebrow {
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--brand-soft); margin: 0 0 clamp(12px, 2vh, 22px);
+    }
     .name-slot {
-      position: relative;
-      display: inline-grid;          /* layers stack in one grid cell */
-      font-family: var(--display-font);
-      font-weight: 700;              /* bold */
-      font-size: clamp(2.8rem, 9vw, 6rem);
-      letter-spacing: 0.01em;
-      line-height: 1.05;
-      color: var(--brand);
-      white-space: nowrap;
-      text-align: center;
+      font-family: var(--display-font); font-weight: 700;
+      font-size: clamp(2.8rem, 10vw, 7rem);
+      line-height: 1.0; letter-spacing: -0.01em; color: var(--brand); margin: 0;
     }
-    .name-state {
-      grid-area: 1 / 1;              /* every state occupies the same cell */
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      pointer-events: none;
-    }
-    .name-state.is-active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* Entry effect: per-letter reveal.
-       JS splits .name-line into one .name-letter per character, each
-       carrying a --i index so CSS can stagger the animation. Letters
-       fade up while a blur clears — a clean, premium "settle". */
-    .name-line { display: block; }
+    .name-slot .dot { color: var(--ink-faint); font-weight: 400; font-size: 0.42em; vertical-align: 0.55em; }
+    .name-line { display: inline-block; }
+    /* per-letter reveal: JS splits the name into these spans, CSS staggers them */
     .name-letter {
-      display: inline-block;
-      opacity: 0;
-      transform: translateY(0.5em);
-      filter: blur(12px);
+      display: inline-block; opacity: 0; transform: translateY(0.5em); filter: blur(12px);
       will-change: transform, filter, opacity;
     }
-    .name-letter.is-space { width: 0.28em; }
-    .name-state.reveal .name-letter {
-      animation: letterIn 0.85s var(--ease-out) both;
-      animation-delay: calc(var(--i) * 55ms);
-    }
-    @keyframes letterIn {
-      to { opacity: 1; transform: none; filter: blur(0); }
-    }
+    .name-letter.is-space { width: 0.26em; }
+    .name-slot.reveal .name-letter { animation: letterIn 0.85s var(--ease-out) both; animation-delay: calc(var(--i) * 50ms); }
+    @keyframes letterIn { to { opacity: 1; transform: none; filter: blur(0); } }
 
-    /* Accent line: a hairline that draws in beneath the name once the
-       letters have landed — the finishing flourish. */
     .name-rule {
-      height: 2px;
-      width: 100%;
-      margin-top: clamp(10px, 1.6vh, 18px);
-      border-radius: 2px;
-      background: linear-gradient(90deg, transparent, var(--brand) 50%, transparent);
-      transform: scaleX(0);
-      opacity: 0;
+      height: 2px; width: min(280px, 60%); margin-top: clamp(14px, 2vh, 24px);
+      border-radius: 2px; background: linear-gradient(90deg, var(--brand), transparent);
+      transform: scaleX(0); transform-origin: left; opacity: 0;
     }
-    .name-state.reveal .name-rule {
-      animation: ruleIn 0.9s var(--ease-out) both;
-      /* starts after the last letter is on its way in */
-      animation-delay: var(--rule-delay, 0.8s);
-    }
-    @keyframes ruleIn {
-      to { transform: scaleX(1); opacity: 0.45; }
-    }
+    .name-slot.reveal .name-rule { animation: ruleIn 0.9s var(--ease-out) both; animation-delay: var(--rule-delay, 0.8s); }
+    @keyframes ruleIn { to { transform: scaleX(1); opacity: 0.6; } }
 
+    .hero-taglines { margin-top: clamp(18px, 3vh, 32px); display: flex; flex-direction: column; gap: 4px; }
+    .hero-role { font-family: var(--display-font); font-size: clamp(1.25rem, 3vw, 1.8rem); font-weight: 700; color: var(--ink); }
+    .hero-domains { color: var(--brand-soft); font-weight: 600; font-size: clamp(0.96rem, 2vw, 1.1rem); }
+    .hero-available {
+      margin-top: 16px; display: inline-flex; align-items: center; gap: 9px;
+      font-size: 0.9rem; font-weight: 600; color: var(--brand);
+      background: var(--brand-tint); border: 1px solid var(--hairline); border-radius: 999px;
+      padding: 7px 16px; width: fit-content;
+    }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); animation: pulse 2.2s infinite; }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(74,122,80,0.45); }
+      70% { box-shadow: 0 0 0 9px rgba(74,122,80,0); }
+      100% { box-shadow: 0 0 0 0 rgba(74,122,80,0); }
+    }
+    /* name + golden badge share one row (badge wraps under name on mobile) */
+    .hero-namerow { display: flex; align-items: center; gap: clamp(14px, 2.5vw, 32px); flex-wrap: wrap; }
+
+    /* Golden organisation badge — a premium "seal" beside the name */
+    .org-badge {
+      display: inline-flex; align-items: center; gap: 16px;
+      padding: 14px 28px 14px 18px; border-radius: 20px;
+      background: linear-gradient(135deg, #fbe7a8 0%, #e6c259 38%, #c79a2e 70%, #a87c1f 100%);
+      color: #3a2c06; font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 12px 30px rgba(150,110,20,0.4), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 8px rgba(120,86,8,0.3);
+      position: relative; overflow: hidden;
+      opacity: 0;                          /* part of the cinematic cascade */
+      transition: transform 0.2s var(--ease-out), box-shadow 0.25s ease, opacity 0.9s var(--ease-out) 0.3s;
+    }
+    .hero-in .org-badge { opacity: 1; }
+    .org-badge::after {                 /* slow moving sheen — luxury shimmer */
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.65) 48%, transparent 62%);
+      transform: translateX(-130%); animation: sheen 5.5s ease-in-out infinite;
+    }
+    @keyframes sheen { 0%,55% { transform: translateX(-130%); } 82%,100% { transform: translateX(130%); } }
+    .org-badge:hover { transform: translateY(-3px); color: #3a2c06; box-shadow: 0 18px 40px rgba(150,110,20,0.5), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -4px 8px rgba(120,86,8,0.3); }
+    .org-badge .org-ic {
+      flex: none; width: 52px; height: 52px; border-radius: 50%;
+      display: grid; place-items: center; position: relative; z-index: 1;
+      background: radial-gradient(circle at 35% 28%, #fff7d4, #d8b24a 75%);
+      color: #6b4e0c; box-shadow: inset 0 -3px 6px rgba(120,86,8,0.42), 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .org-badge .org-ic svg { width: 27px; height: 27px; }
+    .org-badge .org-txt { display: grid; gap: 1px; line-height: 1.1; position: relative; z-index: 1; }
+    .org-badge .org-lead { font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.72; }
+    .org-badge .org-txt b { font-family: var(--display-font); font-size: 1.5rem; font-weight: 700; letter-spacing: 0.01em; }
+    .org-badge .org-site { font-size: 0.78rem; opacity: 0.82; letter-spacing: 0.02em; }
+
+    .scroll-hint {
+      margin-top: clamp(18px, 3vh, 30px);
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint);
+    }
+    .scroll-hint .arrow { animation: bob 1.8s var(--ease-out) infinite; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+    /* ========================================================================
+       7. SECTION HEADS (used by Skills / Services / Education slides)
+       ======================================================================== */
+    .section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: clamp(24px, 4vh, 44px); }
+    .section-kicker { font-family: var(--display-font); font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; color: var(--ink); margin: 0; }
+    .section-rule { flex: 1; height: 1px; background: var(--hairline); transform: scaleX(0); transform-origin: left; transition: transform 0.9s var(--ease-out); }
+    .in-view .section-rule { transform: scaleX(1); }
+
+    /* ========================================================================
+       8. EXPERIENCE  (one slide = a list of every role + a left timeline)
+          The Experience controller (JS) watches which role is nearest the
+          screen-centre and adds .open to it (blurb reveals, others collapse),
+          while the timeline dot follows. Skills sit in a column beside each
+          role, mirroring the printed CV.
+       ======================================================================== */
+    .slide-exp .slide-inner { max-width: var(--maxw); }
+
+    /* role list sits in a comfortable centred column (timeline is a fixed rail) */
+    .exp-layout { max-width: 760px; margin: 0 auto; }
+
+    /* --- career timeline rail: FIXED on the right, vertically centred, bigger.
+           Years reveal on the active/hovered dot to keep the rail clean. --- */
+    .timeline {
+      position: fixed; z-index: 80;
+      right: clamp(14px, 3.5vw, 56px); top: 50%;
+      transform: translateY(-50%) translateX(18px);
+      display: none; flex-direction: column; gap: 6px; padding: 6px 0;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+    }
+    body.on-exp .timeline { opacity: 1; pointer-events: auto; transform: translateY(-50%); }
+    @media (min-width: 1024px) { body.on-exp .timeline { display: flex; } }   /* wide screens only */
+
+    .timeline::before {                       /* hairline track behind the knobs */
+      content: ""; position: absolute; right: 7px; top: 22px; bottom: 22px; width: 2px;
+      background: var(--hairline); border-radius: 2px; z-index: 0;
+    }
+    .tl-fill {                                /* brand-gradient progress, height set by JS */
+      position: absolute; right: 7px; top: 22px; width: 2px; height: var(--tl-fill, 0px);
+      background: linear-gradient(var(--brand-soft), var(--brand)); box-shadow: var(--glow);
+      border-radius: 2px; z-index: 0; transition: height 0.45s var(--ease-out);
+    }
+    .tl-dot {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: row-reverse; align-items: center; gap: 12px;
+      background: none; border: none; cursor: pointer; padding: 9px 0;
+      font-family: var(--display-font); font-weight: 700; font-size: 0.92rem;
+      color: var(--ink-faint); text-align: right;
+      transition: color 0.3s ease;
+    }
+    .tl-dot .knob {
+      flex: none; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--brand-tint-2); box-shadow: 0 0 0 4px var(--bg);
+      transition: transform 0.3s var(--spring), background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .tl-dot .yr { opacity: 0; transform: translateX(6px); transition: opacity 0.3s ease, transform 0.3s ease; }
+    .tl-dot.active .yr, .tl-dot:hover .yr { opacity: 1; transform: none; }
+    .tl-dot.done  .knob { background: var(--brand-soft); }
+    .tl-dot.active .knob { background: var(--brand); transform: scale(1.4); box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--brand-tint-2), var(--glow); }
+    .tl-dot.active { color: var(--brand); }
+    .tl-dot:hover { color: var(--brand); }
+
+    /* --- history separators: Present vs Previous (theme-coloured) --- */
+    .exp-phase {
+      display: flex; align-items: center; gap: 12px; margin: clamp(4px,1vh,10px) 0 4px;
+      font-family: var(--display-font); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.18em; text-transform: uppercase;
+    }
+    .exp-phase::after { content: ""; flex: 1; height: 1px; }
+    .exp-phase .ph-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .exp-phase.is-present { color: var(--brand); }
+    .exp-phase.is-present .ph-dot { background: var(--brand); box-shadow: var(--glow); animation: nowDot 2.6s ease-in-out infinite; }
+    .exp-phase.is-present::after { background: linear-gradient(90deg, var(--brand), transparent); }
+    .exp-phase.is-previous { color: var(--ink-faint); margin-top: clamp(14px,3vh,28px); }
+    .exp-phase.is-previous .ph-dot { background: var(--ink-faint); }
+    .exp-phase.is-previous::after { background: var(--hairline); }
+
+    /* --- role list & items --- */
+    .exp-list { display: flex; flex-direction: column; gap: clamp(4px, 1vh, 10px); padding-bottom: 44vh; }
+
+    /* Each role is a block whose HEADER is sticky — so the CURRENT role stays
+       pinned at the top of the section while you scroll, and the next role's
+       header slides up to replace it. Only the active role's detail is open. */
+    .exp-item {
+      border-left: 2px solid transparent; padding-left: clamp(12px, 1.5vw, 18px);
+      scroll-margin-top: calc(var(--exp-pin) + 12px);
+      transition: border-color 0.35s var(--ease-out); cursor: pointer;
+    }
+    .exp-item.open { border-left-color: var(--brand); }
+
+    .exp-head {                              /* the sticky part (2 lines: title row + meta) */
+      position: sticky; top: var(--exp-pin); z-index: 2;
+      background: var(--bg); padding: clamp(10px,1.7vh,15px) 0;
+      transition: background 0.5s ease;
+    }
+    .exp-headtop { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .exp-title {
+      font-family: var(--display-font); font-size: clamp(1.25rem, 2.8vw, 1.8rem); font-weight: 700;
+      color: var(--ink); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; line-height: 1.15;
+      transition: color 0.3s ease;
+    }
+    .exp-item.open .exp-title { color: var(--brand); }
+    .exp-title .qual { font-weight: 400; color: var(--ink-soft); font-size: 0.5em; }
+    /* Live, soft-raised "Now" badge: gradient pill, inner highlight, a pulsing
+       live dot and a slow breathing glow ring. */
+    .now-badge {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--body-font); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--bg);
+      background: linear-gradient(160deg, var(--brand-soft), var(--brand));
+      border-radius: 999px; padding: 5px 12px 5px 10px;
+      animation: nowBreathe 2.6s var(--ease-out) infinite;
+    }
+    .now-badge::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--bg); box-shadow: 0 0 6px rgba(255,255,255,0.7);
+      animation: nowDot 2.6s ease-in-out infinite;
+    }
+    @keyframes nowBreathe {
+      0%,100% { box-shadow: 0 2px 7px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4), 0 0 0 0 rgba(74,122,80,0.5); }
+      50%     { box-shadow: 0 3px 12px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.45), 0 0 0 8px rgba(74,122,80,0); }
+    }
+    @keyframes nowDot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.8); } }
+    .exp-years {
+      flex: none; text-align: right;
+      font-family: var(--display-font); font-weight: 700; font-size: clamp(1rem, 2.2vw, 1.35rem);
+      color: var(--ink); white-space: nowrap;
+    }
+    .exp-years .to { color: var(--ink-faint); font-weight: 400; }
+    .exp-meta {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+      font-size: 0.88rem; font-weight: 600; color: var(--ink-soft); margin-top: 6px;
+    }
+    .exp-meta .sep { color: var(--ink-faint); }
+    .exp-meta .kind { color: var(--brand-soft); background: var(--brand-tint); border-radius: 6px; padding: 2px 9px; font-size: 0.8rem; }
+
+    /* detail (blurb + skills beside it) — opens only for the active role */
+    .exp-detail {
+      display: grid; grid-template-columns: 1fr minmax(150px, 240px); gap: 8px 28px;
+      max-height: 0; opacity: 0; overflow: hidden;
+      transition: max-height 0.55s var(--ease-out), opacity 0.4s ease, margin 0.45s var(--ease-out);
+    }
+    .exp-item.open .exp-detail { max-height: 360px; opacity: 1; margin: 10px 0 clamp(16px,3vh,34px); }
+    .exp-blurb { max-width: 70ch; color: var(--ink-soft); margin: 0; font-size: clamp(0.98rem, 1.6vw, 1.12rem); line-height: 1.7; }
+    .exp-skills { display: flex; flex-wrap: wrap; gap: 7px; align-content: start; }
+
+    .tag {
+      font-size: 0.8rem; font-weight: 600; color: var(--brand);
+      border: 1px solid var(--hairline); border-radius: 999px; padding: 6px 14px; background: var(--bg-soft);
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    }
+    .tag:hover { background: var(--brand-tint-2); border-color: var(--brand); transform: translateY(-2px); }
+
+    /* ========================================================================
+       9. SKILLS SLIDE
+       ======================================================================== */
+    .skill-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: clamp(16px, 2.4vw, 28px); }
+    .skill-group {
+      padding: clamp(18px, 2vw, 26px);
+      background: var(--bg-soft); border: 1px solid var(--hairline);
+      border-radius: 18px; border-top: 3px solid var(--brand);
+      opacity: 0; transform: translateY(var(--reveal-y));
+      transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out), box-shadow 0.3s ease;
+      transition-delay: calc(var(--g, 0) * 110ms);
+    }
+    .skill-group:hover { box-shadow: var(--shadow-float); }
+    .in-view .skill-group { opacity: 1; transform: none; }
+    .skill-group h3 {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      font-family: var(--display-font); font-size: 1.22rem; color: var(--brand);
+      margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--hairline);
+    }
+    .skill-group h3 .n {
+      font-family: var(--body-font); font-size: 0.72rem; font-weight: 700; color: var(--brand-soft);
+      background: var(--brand-tint); border-radius: 999px; padding: 3px 9px; letter-spacing: 0.04em;
+    }
+    .skill-list { display: flex; flex-wrap: wrap; gap: 9px; }
+
+    /* ========================================================================
+       10. SERVICES SLIDE
+       ======================================================================== */
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .service {
+      display: flex; align-items: center; gap: 14px; padding: 18px 20px;
+      border: 1px solid var(--hairline); border-radius: 14px; background: var(--bg-soft);
+      font-weight: 600; color: var(--ink);
+      opacity: 0; transform: translateY(var(--reveal-y));
+      transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out), border-color 0.25s ease, background 0.25s ease;
+      transition-delay: calc(var(--s, 0) * 80ms);
+    }
+    .in-view .service { opacity: 1; transform: none; }
+    .service:hover { border-color: var(--brand); background: var(--brand-tint); }
+    .service .marker { flex: none; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: var(--brand-tint-2); color: var(--brand); }
+    .service .marker svg { width: 18px; height: 18px; }
+
+    /* ========================================================================
+       11. EDUCATION / CERTIFICATES / INTERESTS / LANGUAGES SLIDE
+       ======================================================================== */
+    .three-up { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: clamp(24px, 3vw, 44px); }
+    .panel { opacity: 0; transform: translateY(var(--reveal-y)); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); transition-delay: calc(var(--p, 0) * 120ms); }
+    .in-view .panel { opacity: 1; transform: none; }
+    .panel h3 { font-family: var(--display-font); font-size: 1.18rem; color: var(--brand); margin: 0 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--hairline); }
+    .edu-item .edu-name { font-weight: 700; color: var(--ink); }
+    .edu-item .edu-where { color: var(--ink-soft); font-size: 0.92rem; }
+    .edu-item + .edu-item { margin-top: 16px; }
+    .cert { font-weight: 700; color: var(--ink); }
+    .interests { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 9px; }
+
+    .lang { margin-bottom: 16px; }
+    .lang-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .lang-name { font-weight: 700; color: var(--ink); }
+    .lang-level { font-size: 0.82rem; color: var(--ink-soft); font-weight: 600; }
+    .lang-bar { height: 7px; border-radius: 999px; background: var(--brand-tint-2); overflow: hidden; }
+    /* the fill width animates from 0 → --w when the slide becomes .in-view */
+    .lang-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--brand-soft), var(--brand)); box-shadow: var(--glow);
+      width: 0; transition: width 1.1s var(--ease-out) 0.15s;
+    }
+    .in-view .lang-fill { width: var(--w, 0%); }
+    .lang-fill.is-progress { background: repeating-linear-gradient(45deg, var(--brand) 0 6px, var(--brand-soft) 6px 12px); }
+
+    /* ========================================================================
+       12. CONTACT SLIDE
+       ======================================================================== */
+    .slide-contact { background: var(--bg-soft); transition: background 0.5s ease; }
+    .slide-contact h2 { font-family: var(--display-font); font-size: clamp(1.9rem, 5vw, 3rem); color: var(--brand); margin: 0 0 8px; }
+    .footer-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: clamp(28px, 4vw, 56px); }
+    .footer-tag { color: var(--ink-soft); max-width: 36ch; }
+    .footer-col h4 { font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 14px; }
+    .footer-col a, .footer-col p { display: block; margin: 0 0 10px; color: var(--ink); font-weight: 600; }
+    .footer-col a:hover { color: var(--brand); }
+    .footer-col .muted { color: var(--ink-soft); font-weight: 400; font-size: 0.9rem; }
+    .footer-bottom { margin-top: clamp(32px, 5vh, 56px); padding-top: 22px; border-top: 1px solid var(--hairline); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.84rem; color: var(--ink-faint); }
+
+    /* ========================================================================
+       13. CONTACT MODAL (native <dialog> — free focus-trap / Esc / a11y)
+       ======================================================================== */
+    .contact-dialog { border: none; border-radius: 18px; padding: 0; width: min(440px, calc(100vw - 32px)); background: var(--bg); color: var(--ink); box-shadow: var(--shadow-float); }
+    .contact-dialog::backdrop { background: rgba(10,16,12,0.5); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+    .dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; }
+    .dialog-title { margin: 0; font-family: var(--display-font); font-size: 1.3rem; color: var(--brand); }
+    .dialog-close { font: inherit; font-size: 1.5rem; line-height: 1; color: var(--ink-soft); background: transparent; border: none; width: 36px; height: 36px; border-radius: 9px; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; }
+    .dialog-close:hover { background: var(--brand-tint); color: var(--brand); }
+    .dialog-body { padding: 0 24px 24px; }
+    .c-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--hairline); color: var(--ink); font-weight: 600; }
+    .c-row .c-ic { flex: none; width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; background: var(--brand-tint-2); color: var(--brand); }
+    .c-row .c-ic svg { width: 17px; height: 17px; }
+    .c-row .c-label { font-size: 0.72rem; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+
+    /* ========================================================================
+       14. REDUCED MOTION — strip animation; rely on native scroll (.deck.native)
+       ======================================================================== */
     @media (prefers-reduced-motion: reduce) {
-      .name-letter { opacity: 1; transform: none; filter: none; animation: none; }
-      .name-rule { transform: scaleX(1); opacity: 0.45; animation: none; }
-    }
-
-    /* ============================================================
-       Contact button
-       ============================================================ */
-    .contact-btn {
-      font: inherit;
-      font-weight: 600;
-      font-size: 0.92rem;
-      letter-spacing: 0.01em;
-      color: var(--brand);
-      background: transparent;
-      border: 1px solid var(--brand-hairline);
-      border-radius: 999px;
-      padding: 9px 20px;
-      cursor: pointer;
-      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.05s ease;
-    }
-    .contact-btn:hover,
-    .contact-btn:focus-visible {
-      background: var(--brand);
-      border-color: var(--brand);
-      color: #ffffff;
-    }
-    .contact-btn:active { transform: translateY(1px); }
-    .contact-btn:focus-visible {
-      outline: 2px solid var(--brand-deep);
-      outline-offset: 2px;
-    }
-
-    /* ============================================================
-       Contact overlay / modal
-       --------------------------------------------------------
-       Uses the native <dialog> element: showModal() gives us
-       focus trapping, Esc-to-close, aria-modal semantics, and
-       focus return to the invoker for free. We add backdrop-click
-       close and styling on top. To extend: drop content into
-       .dialog-body.
-       ============================================================ */
-    .contact-dialog {
-      border: none;
-      border-radius: 16px;
-      padding: 0;
-      width: min(480px, calc(100vw - 32px));   /* near-full-width on mobile */
-      background: #ffffff;
-      color: #1a1a1a;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-    }
-    .contact-dialog::backdrop {
-      background: rgba(15, 23, 42, 0.45);       /* dim the page behind */
-      -webkit-backdrop-filter: blur(2px);
-              backdrop-filter: blur(2px);
-    }
-    .dialog-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--brand-hairline);
-    }
-    .dialog-title {
-      margin: 0;
-      font-family: var(--display-font);
-      font-size: 1.25rem;
-      color: var(--brand);
-    }
-    .dialog-close {
-      font: inherit;
-      font-size: 1.4rem;
-      line-height: 1;
-      color: var(--brand);
-      background: transparent;
-      border: none;
-      border-radius: 8px;
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    .dialog-close:hover,
-    .dialog-close:focus-visible { background: var(--brand-tint); }
-    .dialog-close:focus-visible { outline: 2px solid var(--brand-deep); outline-offset: 2px; }
-
-    .dialog-body {
-      padding: 24px;
-      min-height: 80px;     /* placeholder space for contact info — fill later */
-    }
-
-    /* ============================================================
-       Mobile
-       ============================================================ */
-    @media (max-width: 600px) {
-      .site-header { min-height: clamp(200px, 44vh, 360px); }
-      .contact-btn {
-        padding: 7px 15px;
-        font-size: 0.82rem;
+      .deck-track { transition: none; }
+      .island-inner, .island-track .seg, .island-menu, .tl-fill, .tl-dot .knob, .exp-item, .exp-detail { transition: none !important; }
+      .island.is-moving .island-inner { transform: none; }
+      .name-letter, .name-rule, .section-rule, .skill-group, .service, .panel, .lang-fill {
+        animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important;
       }
+      .exp-detail { max-height: none !important; opacity: 1 !important; margin: 10px 0 24px; }  /* all roles open */
+      .hero-reveal, .org-badge { opacity: 1 !important; transform: none !important; filter: none !important; }
+      #curtain { display: none !important; }   /* no curtain when motion is reduced */
+      .lang-fill { width: var(--w, 0%) !important; }
+      .pulse, .scroll-hint .arrow, .island-dot, .now-badge, .now-badge::before,
+      .exp-phase.is-present .ph-dot, .org-badge::after { animation: none; }
     }
 
-    /* Demo page content so the sticky header + fade are visible */
-    .page-content {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 48px var(--header-pad) 120px;
-      line-height: 1.7;
-      color: #475569;
+    /* ========================================================================
+       15. MOBILE
+       ======================================================================== */
+    @media (max-width: 760px) {
+      .footer-grid { grid-template-columns: 1fr; }
+      .island-next { display: none; }     /* keep the pill compact on phones */
+      .exp-layout { grid-template-columns: 1fr; }
+      .timeline { display: none; }        /* rail hides; auto-expand still works */
+    }
+    @media (max-width: 600px) {
+      .exp-detail { grid-template-columns: 1fr; }
+      .exp-item.open .exp-detail { max-height: 520px; }   /* room for stacked skills */
     }
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <!-- Centerpiece: live, swappable name component.
-         JS splits data-text into per-letter spans and triggers the
-         staggered reveal. Add more .name-state layers later and toggle
-         .is-active to crossfade between them. -->
-    <div class="name-slot" aria-label="Fawzi Najjar">
-      <span class="name-state is-active" data-text="Fawzi Najjar" aria-hidden="true">
-        <span class="name-line"></span>
-        <span class="name-rule" aria-hidden="true"></span>
-      </span>
-    </div>
 
-    <!-- Minimal Contact affordance, top-right corner -->
-    <div class="header-corner">
-      <button type="button" class="contact-btn" id="contactBtn" aria-haspopup="dialog">
-        Contact
+  <!-- Intro curtain: dark doors + light seam that open to reveal the hero (JS-timed) -->
+  <div id="curtain" aria-hidden="true">
+    <div class="cur-rays"></div>
+    <div class="cur-panel cur-left"></div>
+    <div class="cur-panel cur-right"></div>
+    <div class="cur-flare"></div>
+    <div class="cur-seam"></div>
+  </div>
+
+  <!-- Top scrim — hides content scrolling up behind the island / sticky header -->
+  <div class="top-scrim" aria-hidden="true"></div>
+
+  <!-- ======================================================================
+       DYNAMIC ISLAND  (fixed header + live position indicator)
+       compact row is always visible; hover/focus/tap opens the jump menu.
+       JS fills #islandTrack (segments) and #islandNav (section links).
+       ====================================================================== -->
+  <div class="island" id="island">
+    <div class="island-inner">
+      <!-- Compact row: a button so it's keyboard-reachable and tap-toggles on mobile -->
+      <button type="button" class="island-compact" id="islandToggle" aria-expanded="false" aria-controls="islandMenu" aria-label="Section navigator">
+        <span class="island-dot" aria-hidden="true"></span>
+        <span class="island-labels">
+          <span class="island-now" id="islandNow">Home</span>
+          <span class="island-next" id="islandNext"></span>
+        </span>
+        <span class="island-track" id="islandTrack" aria-hidden="true"></span>
+        <span class="island-count" id="islandCount"></span>
+        <svg class="island-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </button>
-    </div>
-  </header>
 
-  <!-- Contact overlay (native modal dialog) -->
+      <!-- Expanded menu: jump links + theme toggle + Contact -->
+      <div class="island-menu" id="islandMenu">
+        <div class="island-menu-label">Jump to section</div>
+        <nav class="island-nav" id="islandNav" aria-label="Jump to section"></nav>
+        <div class="island-actions">
+          <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <button type="button" class="contact-btn" id="contactBtn" aria-haspopup="dialog">Contact</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       DECK — every section is a full-screen slide inside .deck-track.
+       data-label  = short name shown in the island (now / next).
+       data-section= logical group used to build the jump menu.
+       ====================================================================== -->
+  <div class="deck" id="deck">
+    <div class="deck-track" id="track">
+
+      <!-- Slide 0 — Hero / Home -->
+      <section class="slide" data-label="Home" data-section="Home">
+        <div class="slide-inner">
+          <p class="hero-eyebrow hero-reveal" style="--d:0s">Cross-Functional Professional</p>
+          <!-- name + golden organisation badge share one row -->
+          <div class="hero-namerow">
+            <h1 class="name-slot" id="nameSlot" aria-label="Fawzi Najjar">
+              <span class="name-line" data-text="Fawzi Najjar" aria-hidden="true"></span><span class="dot">.com</span>
+              <span class="name-rule" aria-hidden="true"></span>
+            </h1>
+            <a class="org-badge" href="https://najjarlimited.com" target="_blank" rel="noopener" aria-label="A Najjar Limited company — najjarlimited.com">
+              <span class="org-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 13v.01M9 17v.01"/></svg></span>
+              <span class="org-txt"><span class="org-lead">A</span><b>Najjar Limited</b><span class="org-site">najjarlimited.com ↗</span></span>
+            </a>
+          </div>
+          <div class="hero-taglines hero-reveal" style="--d:0.2s">
+            <span class="hero-role">Expert in Computing &amp; Digital Operations</span>
+            <span class="hero-domains">Information Technology · Hospitality · Production</span>
+          </div>
+          <span class="hero-available hero-reveal" style="--d:0.45s"><span class="pulse" aria-hidden="true"></span>Available for remote, freelance, contract &amp; on-site roles</span>
+          <div class="scroll-hint hero-reveal" style="--d:0.65s"><span class="arrow" aria-hidden="true">↓</span> Scroll</div>
+        </div>
+      </section>
+
+      <!-- Slide 1 — Experience: ALL roles on one page as a timeline list.
+           data-i ties each .tl-dot (rail) to its .exp-item (role). Role 0 has
+           .open by default (current); the Experience controller (JS) swaps
+           .open to whichever role is nearest screen-centre as you scroll. -->
+      <section class="slide slide-exp" data-label="Experience" data-section="Experience">
+        <div class="slide-inner">
+          <div class="exp-layout">
+
+            <!-- role list (the timeline rail lives outside the deck — see below) -->
+            <div class="exp-list" id="expList">
+
+              <!-- history separator: the current role -->
+              <div class="exp-phase is-present"><span class="ph-dot" aria-hidden="true"></span>Present</div>
+
+              <article class="exp-item open" data-i="0">
+                <header class="exp-head">
+                  <div class="exp-headtop">
+                    <div class="exp-title">Freelance Night Manager <span class="now-badge">Now</span></div>
+                    <div class="exp-years">2022 <span class="to">— Present</span></div>
+                  </div>
+                  <div class="exp-meta"><span class="kind">Full Time</span><span class="sep">·</span><span>On-Site, Amsterdam</span><span class="sep">·</span><a href="https://nightmanagers.nl" target="_blank" rel="noopener">Nightmanagers.nl</a></div>
+                </header>
+                <div class="exp-detail">
+                  <p class="exp-blurb">Provide multi-property night management across diverse hotel environments. Deliver fast problem-solving, guest support, and system oversight. Maintain safety awareness and resolve issues calmly and efficiently.</p>
+                  <aside class="exp-skills"><span class="tag">Night Operations</span><span class="tag">Hospitality Workflow</span><span class="tag">System Oversight</span><span class="tag">Safety Awareness</span></aside>
+                </div>
+              </article>
+
+              <!-- history separator: previous roles -->
+              <div class="exp-phase is-previous"><span class="ph-dot" aria-hidden="true"></span>Previous</div>
+
+              <article class="exp-item" data-i="1">
+                <header class="exp-head">
+                  <div class="exp-headtop">
+                    <div class="exp-title">Web Game Developer</div>
+                    <div class="exp-years">2021 <span class="to">— 2022</span></div>
+                  </div>
+                  <div class="exp-meta"><span class="kind">Part Time</span><span class="sep">·</span><span>Remote, Ukraine</span><span class="sep">·</span><a href="https://urgentgames.com" target="_blank" rel="noopener">Urgentgames.com</a></div>
+                </header>
+                <div class="exp-detail">
+                  <p class="exp-blurb">Developed and reskinned HTML5 slot games using Phaser and CreateJS, improving features and launching new titles. Blended technical skill with creative design to produce engaging digital entertainment.</p>
+                  <aside class="exp-skills"><span class="tag">Web Game Development</span><span class="tag">Enhancement &amp; Reskinning</span><span class="tag">Game Logic</span><span class="tag">Creative Implementation</span></aside>
+                </div>
+              </article>
+
+              <article class="exp-item" data-i="2">
+                <header class="exp-head">
+                  <div class="exp-headtop">
+                    <div class="exp-title">Full-Stack Developer &amp; CRM Specialist</div>
+                    <div class="exp-years">2020 <span class="to">— 2021</span></div>
+                  </div>
+                  <div class="exp-meta"><span class="kind">Full Time</span><span class="sep">·</span><span>Remote, Ukraine</span><span class="sep">·</span><a href="https://umnitech.com" target="_blank" rel="noopener">Umnitech.com</a></div>
+                </header>
+                <div class="exp-detail">
+                  <p class="exp-blurb">Designed and built custom financial, analytical, and data-management applications using CRM platforms and tailored API integrations. Developed intuitive interfaces that enabled seamless data interaction, real-time reporting, and enhanced client workflows.</p>
+                  <aside class="exp-skills"><span class="tag">Data Management</span><span class="tag">Web Development</span><span class="tag">CRM &amp; API</span><span class="tag">Reporting Tools</span></aside>
+                </div>
+              </article>
+
+              <article class="exp-item" data-i="3">
+                <header class="exp-head">
+                  <div class="exp-headtop">
+                    <div class="exp-title">Assembly Technician</div>
+                    <div class="exp-years">2019 <span class="to">— 2020</span></div>
+                  </div>
+                  <div class="exp-meta"><span class="kind">Full Time</span><span class="sep">·</span><span>On-Site, Hungary</span><span class="sep">·</span><a href="https://accell-hunland.hu" target="_blank" rel="noopener">Accell-hunland.hu</a></div>
+                </header>
+                <div class="exp-detail">
+                  <p class="exp-blurb">Performed precise in-line quality checks on e-bike components to ensure each unit met technical and safety standards. Maintained workflow accuracy, proper tool use, and strict adherence to production protocols.</p>
+                  <aside class="exp-skills"><span class="tag">Technical Assembly</span><span class="tag">On-Site Operations</span><span class="tag">Workflow Accuracy</span><span class="tag">Tool Handling</span></aside>
+                </div>
+              </article>
+
+              <article class="exp-item" data-i="4">
+                <header class="exp-head">
+                  <div class="exp-headtop">
+                    <div class="exp-title">Production Technician <span class="qual">(Quality Control)</span></div>
+                    <div class="exp-years">2019 <span class="to">— 2020</span></div>
+                  </div>
+                  <div class="exp-meta"><span class="kind">Full Time</span><span class="sep">·</span><span>On-Site, Hungary</span><span class="sep">·</span><a href="https://flex.com" target="_blank" rel="noopener">Flex.com</a></div>
+                </header>
+                <div class="exp-detail">
+                  <p class="exp-blurb">Performed hardware assembly and in-line quality control for Lenovo computers and servers. Ensured reliability, performance, and precision across all production units. Applied manufacturing principles, tool accuracy, and strict attention to detail.</p>
+                  <aside class="exp-skills"><span class="tag">Quality Control</span><span class="tag">Manufacturing Principles</span><span class="tag">Hardware Assembly</span><span class="tag">Troubleshooting</span></aside>
+                </div>
+              </article>
+
+              <article class="exp-item" data-i="5">
+                <header class="exp-head">
+                  <div class="exp-headtop">
+                    <div class="exp-title">Operations Director <span class="qual">(Co-Founder)</span></div>
+                    <div class="exp-years">2018 <span class="to">— 2019</span></div>
+                  </div>
+                  <div class="exp-meta"><span class="kind">Full Time</span><span class="sep">·</span><span>On-Site, Lebanon</span><span class="sep">·</span><span>HighNet</span></div>
+                </header>
+                <div class="exp-detail">
+                  <p class="exp-blurb">Led operations at an independent ISP, deploying wireless infrastructure and optimizing network performance. Managed technical support, strategic planning, and freelance installations using Mikrotik, Ubiquiti, and TP-Link systems.</p>
+                  <aside class="exp-skills"><span class="tag">Wireless Infrastructure</span><span class="tag">Technical Support</span><span class="tag">ISP Operations</span><span class="tag">Network Optimization</span></aside>
+                </div>
+              </article>
+
+              <article class="exp-item" data-i="6">
+                <header class="exp-head">
+                  <div class="exp-headtop">
+                    <div class="exp-title">Regional Operations Specialist</div>
+                    <div class="exp-years">2015 <span class="to">— 2018</span></div>
+                  </div>
+                  <div class="exp-meta"><span class="kind">Full Time</span><span class="sep">·</span><span>On-Site, Lebanon</span><span class="sep">·</span><a href="https://netprolb.com" target="_blank" rel="noopener">Netprolb.com</a></div>
+                </header>
+                <div class="exp-detail">
+                  <p class="exp-blurb">Oversaw wireless infrastructure and regional ISP operations, optimizing network performance and client connectivity. Delivered installations, troubleshooting, and support using Mikrotik, Ubiquiti, Mimosa, and TP-Link systems.</p>
+                  <aside class="exp-skills"><span class="tag">ISP Oversight</span><span class="tag">Wireless Installations</span><span class="tag">Regional Coordination</span><span class="tag">Network Performance</span></aside>
+                </div>
+              </article>
+
+            </div><!-- /.exp-list -->
+          </div><!-- /.exp-layout -->
+        </div>
+      </section>
+
+      <!-- Slide 8 — Skills -->
+      <section class="slide reveal-group" data-label="Skills" data-section="Skills">
+        <div class="slide-inner">
+          <div class="section-head"><h2 class="section-kicker">Skills</h2><span class="section-rule"></span></div>
+          <div class="skill-groups">
+            <div class="skill-group" style="--g:0">
+              <h3>Information Technology <span class="n">10</span></h3>
+              <div class="skill-list"><span class="tag">Web Development</span><span class="tag">CRM &amp; API</span><span class="tag">Data Management</span><span class="tag">Reporting Tools</span><span class="tag">Web Game Development</span><span class="tag">Game Logic</span><span class="tag">Network Optimization</span><span class="tag">ISP Operations</span><span class="tag">Wireless Infrastructure</span><span class="tag">Technical Support</span></div>
+            </div>
+            <div class="skill-group" style="--g:1">
+              <h3>Hospitality <span class="n">5</span></h3>
+              <div class="skill-list"><span class="tag">Night Operations</span><span class="tag">Hospitality Workflow</span><span class="tag">System Oversight</span><span class="tag">Safety Awareness</span><span class="tag">Issue Resolution</span></div>
+            </div>
+            <div class="skill-group" style="--g:2">
+              <h3>Production <span class="n">6</span></h3>
+              <div class="skill-list"><span class="tag">Quality Control</span><span class="tag">Hardware Assembly</span><span class="tag">Manufacturing Principles</span><span class="tag">Workflow Accuracy</span><span class="tag">Tool Handling</span><span class="tag">Troubleshooting</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 9 — Services -->
+      <section class="slide reveal-group" data-label="Services" data-section="Services">
+        <div class="slide-inner">
+          <div class="section-head"><h2 class="section-kicker">Services</h2><span class="section-rule"></span></div>
+          <div class="services-grid">
+            <div class="service" style="--s:0"><span class="marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>Software Development</div>
+            <div class="service" style="--s:1"><span class="marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>Assembly &amp; Production Support</div>
+            <div class="service" style="--s:2"><span class="marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg></span>Hospitality Operations</div>
+            <div class="service" style="--s:3"><span class="marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>Entrepreneurial Support</div>
+            <div class="service" style="--s:4"><span class="marker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>Online &amp; On-Site Support</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 10 — Education / Certificates / Interests / Languages -->
+      <section class="slide reveal-group" data-label="Education" data-section="Education">
+        <div class="slide-inner">
+          <div class="section-head"><h2 class="section-kicker">Education &amp; More</h2><span class="section-rule"></span></div>
+          <div class="three-up">
+            <div class="panel" style="--p:0">
+              <h3>Education</h3>
+              <div class="edu-item"><div class="edu-name">Computer Science</div><div class="edu-where">Lebanese University · 2016–2018</div></div>
+              <h3 style="margin-top:28px">Certificates</h3>
+              <div class="cert">BHV — Emergency Response (NL)</div>
+            </div>
+            <div class="panel" style="--p:1">
+              <h3>Interests</h3>
+              <div class="interests"><span class="tag">Trading</span><span class="tag">Startups</span><span class="tag">Scalable Business</span></div>
+              <h3 style="margin-top:28px">Organisation</h3>
+              <div class="edu-item"><div class="edu-name">Najjar Limited</div><div class="edu-where"><a href="https://najjarlimited.com" target="_blank" rel="noopener">najjarlimited.com</a> · KVK 21311322</div></div>
+            </div>
+            <div class="panel" style="--p:2">
+              <h3>Languages</h3>
+              <div class="lang"><div class="lang-top"><span class="lang-name">Arabic</span><span class="lang-level">Native · 5/5</span></div><div class="lang-bar"><div class="lang-fill" style="--w:100%"></div></div></div>
+              <div class="lang"><div class="lang-top"><span class="lang-name">English</span><span class="lang-level">Fluent · 4/5</span></div><div class="lang-bar"><div class="lang-fill" style="--w:80%"></div></div></div>
+              <div class="lang"><div class="lang-top"><span class="lang-name">Dutch</span><span class="lang-level">In Progress</span></div><div class="lang-bar"><div class="lang-fill is-progress" style="--w:35%"></div></div></div>
+              <div class="lang"><div class="lang-top"><span class="lang-name">Russian</span><span class="lang-level">Basic · 1/5</span></div><div class="lang-bar"><div class="lang-fill" style="--w:20%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 11 — Contact -->
+      <section class="slide slide-contact reveal-group" data-label="Contact" data-section="Contact">
+        <div class="slide-inner">
+          <div class="footer-grid">
+            <div class="footer-col">
+              <h2>Let's work together.</h2>
+              <p class="footer-tag">Available for remote, freelance, contract, or on-site roles across IT, hospitality, and production.</p>
+            </div>
+            <div class="footer-col">
+              <h4>Get in touch</h4>
+              <a href="mailto:Contact@fawzinajjar.com">Contact@fawzinajjar.com</a>
+              <a href="tel:+310638904012">+31 063 890 4012</a>
+              <p class="muted">Amsterdam, Netherlands</p>
+            </div>
+            <div class="footer-col">
+              <h4>Elsewhere</h4>
+              <a href="https://fawzinajjar.com" target="_blank" rel="noopener">fawzinajjar.com</a>
+              <a href="https://najjarlimited.com" target="_blank" rel="noopener">najjarlimited.com</a>
+              <p class="muted">Najjar Limited · KVK 21311322</p>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <span>© <span id="year"></span> Fawzi Najjar</span>
+            <span>Cross-Functional Professional · Amsterdam</span>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /.deck-track -->
+  </div><!-- /.deck -->
+
+  <!-- ======================================================================
+       CAREER TIMELINE RAIL — fixed on the right, vertically centred.
+       Lives OUTSIDE .deck (a transformed ancestor would trap a fixed child).
+       Only shown while the Experience slide is active (body.on-exp). Each dot
+       maps to a role via data-i; the Experience controller syncs active/fill.
+       ====================================================================== -->
+  <aside class="timeline" id="timeline" aria-label="Career timeline">
+    <span class="tl-fill" aria-hidden="true"></span>
+    <button type="button" class="tl-dot" data-i="0"><span class="knob"></span><span class="yr">2022</span></button>
+    <button type="button" class="tl-dot" data-i="1"><span class="knob"></span><span class="yr">2021</span></button>
+    <button type="button" class="tl-dot" data-i="2"><span class="knob"></span><span class="yr">2020</span></button>
+    <button type="button" class="tl-dot" data-i="3"><span class="knob"></span><span class="yr">2019</span></button>
+    <button type="button" class="tl-dot" data-i="4"><span class="knob"></span><span class="yr">2019</span></button>
+    <button type="button" class="tl-dot" data-i="5"><span class="knob"></span><span class="yr">2018</span></button>
+    <button type="button" class="tl-dot" data-i="6"><span class="knob"></span><span class="yr">2015</span></button>
+  </aside>
+
+  <!-- ======================================================================
+       CONTACT MODAL — native <dialog>; opened from the island's Contact button
+       ====================================================================== -->
   <dialog class="contact-dialog" id="contactDialog" aria-labelledby="contactTitle">
     <div class="dialog-header">
       <h2 class="dialog-title" id="contactTitle">Contact</h2>
       <button type="button" class="dialog-close" id="dialogClose" aria-label="Close contact dialog">&times;</button>
     </div>
     <div class="dialog-body">
-      <!-- Contact info placeholder — fill in later -->
+      <a class="c-row" href="mailto:Contact@fawzinajjar.com">
+        <span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
+        <span><span class="c-label">Email</span><br>Contact@fawzinajjar.com</span>
+      </a>
+      <a class="c-row" href="tel:+310638904012">
+        <span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+        <span><span class="c-label">Phone</span><br>+31 063 890 4012</span>
+      </a>
+      <div class="c-row">
+        <span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span><span class="c-label">Location</span><br>Amsterdam, Netherlands</span>
+      </div>
+      <a class="c-row" href="https://najjarlimited.com" target="_blank" rel="noopener">
+        <span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg></span>
+        <span><span class="c-label">Organisation</span><br>Najjar Limited · KVK 21311322</span>
+      </a>
     </div>
   </dialog>
 
-  <main class="page-content">
-    <p>Page content goes here. Scroll to see the frosted header stay pinned with its soft bottom fade.</p>
-  </main>
-
   <script>
-    // ============================================================
-    // Contact overlay controller
-    // Native <dialog>.showModal() handles: focus trap, Esc-to-close,
-    // aria-modal, and focus return to the invoker. We layer on
-    // backdrop-click-to-close.
-    // ============================================================
+  "use strict";
+  /* ==========================================================================
+     SCRIPT OVERVIEW
+       A. Theme toggle      — flip light/dark, persist to localStorage
+       B. Deck controller   — JS-driven slide navigation (the scroll take-over)
+       C. Island            — live current→next indicator, progress track, menu
+       D. Name reveal       — split hero name into per-letter spans (runs once)
+       E. Contact modal     — open/close the native <dialog>
+       F. Misc              — footer year
+     ========================================================================== */
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    /* ----------------------------------------------------------------------
+       A. THEME TOGGLE — cinematic circular reveal
+          Flip the theme inside a View Transition, then animate a clip-path
+          circle on the new snapshot, growing from the toggle button outward.
+          (CSS disables the default cross-fade — see the ::view-transition
+          rules near the top.) Falls back to an instant flip where the API
+          is unavailable or motion is reduced.
+       ---------------------------------------------------------------------- */
+    (function themeSwitch() {
+      var btn = document.getElementById("themeToggle");
+      var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function applyTheme() {
+        var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("theme", next); } catch (e) {}
+      }
+
+      btn.addEventListener("click", function (e) {
+        if (!document.startViewTransition || prefersReduced) { applyTheme(); return; }
+        // Circle origin = click point (or the button's centre for keyboard use).
+        var r = btn.getBoundingClientRect();
+        var x = e.clientX || (r.left + r.width / 2);
+        var y = e.clientY || (r.top + r.height / 2);
+        var endR = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        var vt = document.startViewTransition(applyTheme);
+        vt.ready.then(function () {
+          document.documentElement.animate(
+            { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + endR + "px at " + x + "px " + y + "px)"] },
+            { duration: 620, easing: "cubic-bezier(0.22,1,0.36,1)", pseudoElement: "::view-transition-new(root)" }
+          );
+        });
+      });
+    })();
+
+    /* ----------------------------------------------------------------------
+       B. DECK CONTROLLER
+          Moves .deck-track by setting --i (the active slide index). We take
+          over wheel/touch/keys so one gesture = one slide. A short lock
+          (cleared on transitionend) blocks the trackpad-inertia double-skips
+          that were causing the "browser scrolling interfering" feel.
+
+          Tall slides: if the current slide's content overflows the screen we
+          let it scroll natively first, and only change slide once it reaches
+          the top/bottom edge.
+       ---------------------------------------------------------------------- */
+    var deck   = document.getElementById("deck");
+    var track  = document.getElementById("track");
+    var slides = Array.prototype.slice.call(track.children);
+    var COUNT  = slides.length;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var index = 0;          // current slide
+    var locked = false;     // animation/cooldown lock
+
+    // Mark a slide active: drive the per-slide reveal (re-animates each visit)
+    // and flag the body when the Experience slide is showing (→ timeline rail).
+    function setActive(i) {
+      slides.forEach(function (s, n) { s.classList.toggle("in-view", n === i); });
+      document.body.classList.toggle("on-exp", !!slides[i] && slides[i].classList.contains("slide-exp"));
+    }
+
+    // Core navigation. Clamp, move the track, update island + reveals.
+    function navigate(i) {
+      i = Math.max(0, Math.min(COUNT - 1, i));
+      if (i === index) return;
+      index = i;
+      track.style.setProperty("--i", i);
+      setActive(i);
+      Island.update(i);
+      Island.pop();
+    }
+
+    // Is the current slide internally scrollable in `dir` (1=down,-1=up)?
+    function canInnerScroll(dir) {
+      var el = slides[index];
+      if (el.scrollHeight <= el.clientHeight + 1) return false;
+      return dir > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 1;
+    }
+
+    if (!reduce) {
+      // ---- Hijack mode: full control via transform ----
+      // Release the lock when the slide glide finishes (+ small cooldown).
+      track.addEventListener("transitionend", function (e) {
+        if (e.propertyName === "transform") { setTimeout(function () { locked = false; }, 120); }
+      });
+
+      // Wheel: one notch = one slide (unless inner content still has room).
+      deck.addEventListener("wheel", function (e) {
+        var dir = e.deltaY > 0 ? 1 : -1;
+        if (Math.abs(e.deltaY) < 6) return;          // ignore micro jitter
+        if (canInnerScroll(dir)) return;             // let tall slide scroll first
+        e.preventDefault();                          // stop native scroll/bounce
+        if (locked) return;
+        locked = true;
+        navigate(index + dir);
+        // safety: if no transition fired (e.g. clamped at an edge), free the lock
+        setTimeout(function () { locked = false; }, 900);
+      }, { passive: false });
+
+      // Touch: a vertical swipe = one slide.
+      var touchY = null;
+      deck.addEventListener("touchstart", function (e) { touchY = e.touches[0].clientY; }, { passive: true });
+      deck.addEventListener("touchmove", function (e) {
+        if (touchY === null) return;
+        var dir = (touchY - e.touches[0].clientY) > 0 ? 1 : -1;
+        if (!canInnerScroll(dir)) e.preventDefault();   // block rubber-band when we'll navigate
+      }, { passive: false });
+      deck.addEventListener("touchend", function (e) {
+        if (touchY === null) return;
+        var dy = touchY - e.changedTouches[0].clientY;
+        var dir = dy > 0 ? 1 : -1;
+        if (Math.abs(dy) > 50 && !locked && !canInnerScroll(dir)) {
+          locked = true; navigate(index + dir);
+          setTimeout(function () { locked = false; }, 900);
+        }
+        touchY = null;
+      }, { passive: true });
+
+      setActive(0);
+    } else {
+      // ---- Reduced-motion fallback: ordinary native scrolling ----
+      deck.classList.add("native");
+      slides.forEach(function (s) { s.classList.add("in-view"); });
+      // Keep the island in sync with whichever slide is centred.
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            index = slides.indexOf(en.target);
+            Island.update(index);
+            document.body.classList.toggle("on-exp", en.target.classList.contains("slide-exp"));
+          }
+        });
+      }, { root: deck, threshold: 0.5 });
+      slides.forEach(function (s) { io.observe(s); });
+    }
+
+    // Keyboard navigation (both modes; in native mode the browser also scrolls).
+    window.addEventListener("keydown", function (e) {
+      if (document.getElementById("contactDialog").open) return;   // let the modal handle keys
+      var go = null;
+      if (e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ") go = index + 1;
+      else if (e.key === "ArrowUp" || e.key === "PageUp") go = index - 1;
+      else if (e.key === "Home") go = 0;
+      else if (e.key === "End") go = COUNT - 1;
+      if (go === null) return;
+      e.preventDefault();
+      if (reduce) slides[Math.max(0, Math.min(COUNT - 1, go))].scrollIntoView({ behavior: "smooth" });
+      else navigate(go);
+    });
+
+    /* ----------------------------------------------------------------------
+       C. ISLAND  (live indicator + jump menu)
+          Reads data-label/data-section off the slides (single source of truth),
+          builds the segment track + section menu, and updates current→next.
+       ---------------------------------------------------------------------- */
+    var Island = (function () {
+      var island   = document.getElementById("island");
+      var elNow    = document.getElementById("islandNow");
+      var elNext   = document.getElementById("islandNext");
+      var elCount  = document.getElementById("islandCount");
+      var elTrack  = document.getElementById("islandTrack");
+      var elNav    = document.getElementById("islandNav");
+      var toggle   = document.getElementById("islandToggle");
+      var moveTimer = null;
+
+      var labels = slides.map(function (s) { return s.dataset.label || ""; });
+
+      // Build one progress segment per slide.
+      var segs = labels.map(function () {
+        var d = document.createElement("span");
+        d.className = "seg";
+        elTrack.appendChild(d);
+        return d;
+      });
+
+      // Build the jump menu: first slide index of each unique section.
+      var seen = {};
+      slides.forEach(function (s, i) {
+        var sec = s.dataset.section || s.dataset.label;
+        if (seen[sec] !== undefined) return;
+        seen[sec] = i;
+        var b = document.createElement("button");
+        b.type = "button";
+        b.dataset.go = i;
+        b.innerHTML = "<span>" + sec + "</span><span class='idx'>" + String(i + 1).padStart(2, "0") + "</span>";
+        b.addEventListener("click", function () {
+          close();
+          if (reduce) slides[i].scrollIntoView({ behavior: "smooth" });
+          else navigate(i);
+        });
+        elNav.appendChild(b);
+      });
+      var navBtns = Array.prototype.slice.call(elNav.children);
+
+      // Reflect position into compact labels, count, track, and menu highlight.
+      function update(i) {
+        elNow.textContent = labels[i];
+        elNext.innerHTML = i < COUNT - 1 ? "<span class='ar'>→</span>" + labels[i + 1] : "";
+        elCount.textContent = (i + 1) + " / " + COUNT;
+        segs.forEach(function (seg, n) {
+          seg.classList.toggle("done", n < i);
+          seg.classList.toggle("current", n === i);
+        });
+        // highlight the section the active slide belongs to
+        var sec = slides[i].dataset.section || slides[i].dataset.label;
+        navBtns.forEach(function (b) {
+          b.classList.toggle("current", (slides[+b.dataset.go].dataset.section || slides[+b.dataset.go].dataset.label) === sec);
+        });
+      }
+
+      // Brief "pop" morph when moving to a new slide.
+      function pop() {
+        island.classList.add("is-moving");
+        clearTimeout(moveTimer);
+        moveTimer = setTimeout(function () { island.classList.remove("is-moving"); }, 360);
+      }
+
+      function open()  { island.classList.add("is-open");    toggle.setAttribute("aria-expanded", "true"); }
+      function close() { island.classList.remove("is-open"); toggle.setAttribute("aria-expanded", "false"); }
+
+      // Open on hover (desktop) / focus (keyboard); tap toggles (touch).
+      island.addEventListener("mouseenter", open);
+      island.addEventListener("mouseleave", close);
+      island.addEventListener("focusin", open);
+      island.addEventListener("focusout", function (e) {
+        if (!island.contains(e.relatedTarget)) close();
+      });
+      toggle.addEventListener("click", function () {
+        island.classList.contains("is-open") ? close() : open();
+      });
+      // Esc closes the menu.
+      window.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+
+      update(0);
+      return { update: update, pop: pop, close: close };
+    })();
+
+    /* ----------------------------------------------------------------------
+       C2. EXPERIENCE CONTROLLER — scroll auto-expand + timeline sync
+          Each role's header is sticky (CSS), so the current role stays pinned
+          at the top while you scroll. Here we mark that pinned role active —
+          its detail (blurb + skills) opens and the timeline dot + fill follow.
+          Clicking a timeline dot (or a role) scrolls its header to the pin line
+          and opens it. Works whether the inner list scrolls (hijack mode) or
+          the whole deck scrolls (reduced-motion/native).
+       ---------------------------------------------------------------------- */
+    (function experience() {
+      var expSlide = document.querySelector(".slide-exp");
+      if (!expSlide) return;
+      var items  = Array.prototype.slice.call(expSlide.querySelectorAll(".exp-item"));
+      var dots   = Array.prototype.slice.call(document.querySelectorAll(".tl-dot"));  // rail is top-level
+      var tlFill = document.querySelector(".tl-fill");
+      var current = -1;
+
+      // Mark role i active: open it, set timeline dot states + fill height.
+      function setRole(i) {
+        if (i === current) return;
+        current = i;
+        items.forEach(function (it) { it.classList.toggle("open", +it.dataset.i === i); });
+        dots.forEach(function (d) {
+          var di = +d.dataset.i;
+          d.classList.toggle("active", di === i);
+          d.classList.toggle("done", di < i);
+        });
+        if (tlFill && dots[i]) {
+          var h = (dots[i].offsetTop + dots[i].offsetHeight / 2) - (dots[0].offsetTop + dots[0].offsetHeight / 2);
+          tlFill.style.setProperty("--tl-fill", Math.max(0, h) + "px");
+        }
+      }
+
+      // The active role = the last one whose top has scrolled past the pin line
+      // (= the role whose sticky header is currently pinned at the top).
+      var PIN = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--exp-pin")) || 90;
+      var raf = null;
+      function recompute() {
+        raf = null;
+        var pinY = expSlide.getBoundingClientRect().top + PIN + 6;
+        var best = 0;
+        items.forEach(function (it) {
+          if (it.getBoundingClientRect().top <= pinY) best = +it.dataset.i;
+        });
+        setRole(best);
+      }
+      function onScroll() { if (raf === null) raf = requestAnimationFrame(recompute); }
+
+      // The inner list scrolls in hijack mode; the deck scrolls in native mode.
+      expSlide.addEventListener("scroll", onScroll, { passive: true });
+      document.getElementById("deck").addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", function () { var c = current; current = -1; setRole(c < 0 ? 0 : c); });
+
+      // Scroll a role's header up to the pin line AND open it immediately.
+      function goRole(i) {
+        if (i < 0 || i >= items.length) return;
+        setRole(i);
+        var it = items[i];
+        if (expSlide.scrollHeight > expSlide.clientHeight + 2) {     // hijack mode (inner scroll)
+          var sr = expSlide.getBoundingClientRect();
+          var ir = it.getBoundingClientRect();
+          var target = expSlide.scrollTop + (ir.top - sr.top) - PIN - 6;
+          expSlide.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+        } else {                                                     // native/reduced mode (deck scroll)
+          it.scrollIntoView({ block: "start", behavior: "smooth" });
+        }
+      }
+      dots.forEach(function (d) { d.addEventListener("click", function () { goRole(+d.dataset.i); }); });
+      items.forEach(function (it) {
+        it.addEventListener("click", function (e) {
+          if (e.target.closest("a")) return;            // don't hijack the site links
+          goRole(+it.dataset.i);
+        });
+      });
+
+      setRole(0);   // current role open by default
+    })();
+
+    /* ----------------------------------------------------------------------
+       D. INTRO SEQUENCE — curtain → name → cascade
+          Build the hero name as per-letter spans (hidden), then time the
+          reveal to the light-curtain: the doors open (~0.95s→2.1s), the name
+          reveals as light floods (~1.5s), the rest cascades ~2s later, and the
+          curtain element is removed. Reduced-motion: no curtain, everything
+          shows immediately.
+       ---------------------------------------------------------------------- */
+    (function intro() {
+      var slot = document.getElementById("nameSlot");
+      var line = slot && slot.querySelector(".name-line");
+      var rule = slot && slot.querySelector(".name-rule");
+      if (!line) return;
+      var STEP = 0.05;
+      var chars = Array.from(line.getAttribute("data-text") || "");
+      line.textContent = "";
+      chars.forEach(function (ch, i) {
+        var span = document.createElement("span");
+        span.className = "name-letter";
+        span.style.setProperty("--i", i);
+        if (ch === " ") { span.classList.add("is-space"); span.innerHTML = "&nbsp;"; }
+        else { span.textContent = ch; }
+        line.appendChild(span);
+      });
+      if (rule) rule.style.setProperty("--rule-delay", (chars.length * STEP + 0.2).toFixed(2) + "s");
+      slot.closest(".slide").classList.add("in-view");   // hero is the active slide at start
+
+      var heroInner = slot.closest(".slide-inner");
+      var curtain   = document.getElementById("curtain");
+      var reduced   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function startName() { requestAnimationFrame(function () { slot.classList.add("reveal"); }); }
+      function showRest()  { heroInner.classList.add("hero-in"); }
+      function dropCurtain(){ if (curtain && curtain.parentNode) curtain.parentNode.removeChild(curtain); }
+
+      if (reduced) { dropCurtain(); startName(); showRest(); return; }
+
+      // Timeline (ms): doors begin opening at 950 (CSS) → name as light floods →
+      // pause → rest cascades → remove the spent curtain.
+      setTimeout(startName, 1500);
+      setTimeout(showRest, 3500);
+      setTimeout(dropCurtain, 2600);
+    })();
+
+    /* ----------------------------------------------------------------------
+       E. CONTACT MODAL — native <dialog> gives focus-trap + Esc for free; we
+          add backdrop-click-to-close.
+       ---------------------------------------------------------------------- */
     (function () {
-      const dialog = document.getElementById("contactDialog");
-      const openBtn = document.getElementById("contactBtn");
-      const closeBtn = document.getElementById("dialogClose");
-
-      openBtn.addEventListener("click", () => dialog.showModal());
-      closeBtn.addEventListener("click", () => dialog.close());
-
-      // Click on the dimmed backdrop (outside the panel) closes it.
-      dialog.addEventListener("click", (e) => {
-        const r = dialog.getBoundingClientRect();
-        const inPanel =
-          e.clientX >= r.left && e.clientX <= r.right &&
-          e.clientY >= r.top  && e.clientY <= r.bottom;
+      var dialog = document.getElementById("contactDialog");
+      document.getElementById("contactBtn").addEventListener("click", function () {
+        Island.close();
+        dialog.showModal();
+      });
+      document.getElementById("dialogClose").addEventListener("click", function () { dialog.close(); });
+      dialog.addEventListener("click", function (e) {
+        var r = dialog.getBoundingClientRect();
+        var inPanel = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
         if (!inPanel) dialog.close();
       });
     })();
 
-    // ============================================================
-    // Name reveal — splits the active name into per-letter spans and
-    // triggers the staggered fade/blur-clear, then draws the accent
-    // line. CSS handles the motion; we just build the letters, set the
-    // stagger index (--i), and time the rule (--rule-delay).
-    // Honors prefers-reduced-motion (CSS shows everything instantly).
-    // ============================================================
-    (function revealName() {
-      const state = document.querySelector(".name-state.is-active");
-      if (!state) return;
-      const line = state.querySelector(".name-line");
-      const rule = state.querySelector(".name-rule");
-      const full = state.getAttribute("data-text") || "";
-      if (!line) return;
-
-      const STEP = 0.055;         // seconds between each letter (matches CSS)
-      const chars = [...full];
-      line.textContent = "";
-
-      chars.forEach((ch, i) => {
-        const span = document.createElement("span");
-        span.className = "name-letter";
-        span.style.setProperty("--i", i);
-        if (ch === " ") {
-          span.classList.add("is-space");
-          span.innerHTML = "&nbsp;";
-        } else {
-          span.textContent = ch;
-        }
-        line.appendChild(span);
-      });
-
-      // Draw the accent line just after the final letter begins settling.
-      if (rule) {
-        rule.style.setProperty("--rule-delay", (chars.length * STEP + 0.15).toFixed(2) + "s");
-      }
-
-      // Kick the animation on the next frame so styles apply cleanly.
-      requestAnimationFrame(() => state.classList.add("reveal"));
-    })();
-
-    // ============================================================
-    // Live name component (mechanism only)
-    // ------------------------------------------------------------
-    // swapName(html) crossfades the name slot to a new state.
-    // Cycle logic + message list come later; expose it on window
-    // so it's easy to drive from elsewhere.
-    // ============================================================
-    window.swapName = function swapName(html) {
-      const slot = document.querySelector(".name-slot");
-      if (!slot) return;
-      const current = slot.querySelector(".name-state.is-active");
-      const next = document.createElement("span");
-      next.className = "name-state";
-      next.innerHTML = html;
-      slot.appendChild(next);
-      // Force reflow so the opacity transition runs on the new layer.
-      void next.offsetWidth;
-      next.classList.add("is-active");
-      if (current) {
-        current.classList.remove("is-active");
-        current.addEventListener("transitionend", () => current.remove(), { once: true });
-      }
-    };
+    /* ----------------------------------------------------------------------
+       F. MISC
+       ---------------------------------------------------------------------- */
+    document.getElementById("year").textContent = new Date().getFullYear();
+  });
   </script>
 </body>
 </html>
